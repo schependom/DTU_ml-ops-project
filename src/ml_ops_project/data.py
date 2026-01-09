@@ -23,7 +23,7 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
         self.tokenized_datasets = dataset.map(tokenize_function, batched=True)
 
         # 3. Set format for PyTorch
-        self.tokenized_datasets.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
+        self.tokenized_datasets.set_format(type="torch", columns=["input_ids", "attention_mask", "labels"])
 
         # 4. Create the DataCollator (handles padding)
         self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)

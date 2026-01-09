@@ -7,7 +7,7 @@ from ml_ops_project.models import SentimentClassifier
 
 
 # 1. Add the Hydra Decorator
-@hydra.main(config_path="../config", config_name="config", version_base="1.2")
+@hydra.main(config_path="../../configs", config_name="config", version_base="1.2")
 def train(cfg: DictConfig):
     # Optional: Print config to verify (useful in logs)
     print(OmegaConf.to_yaml(cfg))

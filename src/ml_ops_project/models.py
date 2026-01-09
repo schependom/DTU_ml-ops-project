@@ -16,18 +16,18 @@ class SentimentClassifier(pl.LightningModule):
         return self.model(input_ids, attention_mask=attention_mask, labels=labels)
 
     def training_step(self, batch, batch_idx):
-        outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["label"])
+        outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
         self.log("train_loss", loss, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
-        outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["label"])
+        outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
 
         # Calculate accuracy
         preds = torch.argmax(outputs.logits, dim=1)
-        acc = (preds == batch["label"]).float().mean()
+        acc = (preds == batch["labels"]).float().mean()
 
         self.log("val_loss", loss, prog_bar=True)
         self.log("val_accuracy", acc, prog_bar=True)
