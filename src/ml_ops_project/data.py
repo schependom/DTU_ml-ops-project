@@ -14,6 +14,7 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
     def setup(self, stage=None):
         # 1. Download the dataset
         dataset = load_dataset("rotten_tomatoes")
+        dataset = dataset.rename_column("label", "labels")
 
         # 2. Tokenize the data
         # We only tokenize here. Padding happens in the DataCollator (dynamic padding)
