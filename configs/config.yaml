@@ -1,13 +1,6 @@
-# Main configuration file for the project
 defaults:
-  - model_conf
-  - training_conf
-  - optimizer: adam
-  - _self_
+  - model: distilbert
+  - training: default
+  - _self_  # essentially allows the main config to override defaults
 
-wandb:
-  enabled: true
-
-# Define which parts of config to use
-use_model_conf: true
-use_training_conf: true
+experiment_name: "baseline_distilbert"

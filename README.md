@@ -58,24 +58,9 @@ Our training pipeline will include:
 
 ---
 
-### MLOps Deliverables
-The final repository will include:
-- Automated pipeline: `download → preprocess → train → evaluate`
-- **Unit tests** for data processing, tokenization, label mapping, and training step smoke tests
-- **GitHub Actions CI** running linting + tests on each push/PR
-- **Docker** image(s) for both training and inference
-- **FastAPI inference service** that accepts review text and returns the predicted label + confidence
-- A concise **architecture diagram** of the full system
-- A short **report** describing system design, experiments, challenges, and results
 
----
 
-### Optional Extensions (if time permits)
-- Model monitoring (simple drift checks, confidence distribution logging)
-- ONNX export / quantization for faster inference
-- Basic UI frontend for demoing the model
 
----
 
 
 ## Project structure
