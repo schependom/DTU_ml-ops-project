@@ -2,6 +2,11 @@
 
 Repository for the DTU Machine Learning Operations project.
 
+
+## Project description
+
+
+
 ## Project structure
 
 The directory structure of the project looks like this:
