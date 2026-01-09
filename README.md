@@ -53,18 +53,38 @@ a [cookiecutter template](https://github.com/cookiecutter/cookiecutter) based on
 
 ## Installation and notes on using `uv`
 
+### Prerequisites
+
+#### VSCode extensions
+
+You need to download these extensions in order to make the settings in `.vscode/settings.json` to work properly:
+
+-   [`ty`](https://marketplace.visualstudio.com/items?itemName=astral-sh.ty)
+-   [`ruff`](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff-vscode)
+-
+
+#### `uv run` alias
+
+I recommend creating an alias `uvr` for `uv run` to make running scripts easier.
+Add the following line to your `~/.bashrc` (or equivalent on Windows/Linux):
+
+```bash
+echo "alias uvr='uv run'" >> ~/.bashrc
+source ~/.bashrc
+```
+
 ### Virtual environment
+
+Initialize the virtual environment and install dependencies with:
+
+```bash
+uv sync
+```
 
 Activate the virtual environment with:
 
 ```bash
 source .venv/bin/activate
-```
-
-Install dependencies with:
-
-```bash
-uv sync
 ```
 
 Install an optional dependency group with:
@@ -93,17 +113,6 @@ To add a development dependency, use:
 ```bash
 uv add <package-name> --group dev
 # e.g. uv add pytest --group dev
-```
-
-### Requirements files
-
-The `requirements.txt` and `requirements-dev.txt` files are automatically generated from `pyproject.toml` and `uv.lock`. They are provided for compatibility with tools that do not support `pyproject.toml` (e.g. some CIs or older docker builds), and for users who prefer `pip` + `conda`.
-
-Do **not** edit these files manually. Instead, update `pyproject.toml` and then run the following command to sync them:
-
-```bash
-uv export --format requirements-txt --output-file requirements.txt
-uv export --format requirements-txt --only-group dev --output-file requirements-dev.txt
 ```
 
 ### Running scripts
@@ -218,10 +227,10 @@ dvc push
 git push origin main --tags
 ```
 
-Or simply use:
+Or simply use (possible thanks to `tasks.py`):
 
 ```bash
-invoke dvc --folder 'data' --message 'Add new data'
+uvr invoke dvc --folder 'data' --message 'Add new data'
 ```
 
 To go back to a specific version later, you can checkout the git tag:
