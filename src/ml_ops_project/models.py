@@ -33,5 +33,17 @@ class SentimentClassifier(pl.LightningModule):
         self.log("val_accuracy", acc, prog_bar=True)
         return loss
 
+    def test_step(self, batch, batch_idx):
+        outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
+        loss = outputs.loss
+
+        # Calculate accuracy
+        preds = torch.argmax(outputs.logits, dim=1)
+        acc = (preds == batch["labels"]).float().mean()
+
+        self.log("test_loss", loss, prog_bar=True)
+        self.log("test_accuracy", acc, prog_bar=True)
+        return loss
+
     def configure_optimizers(self):
         return torch.optim.AdamW(self.parameters(), lr=self.hparams["learning_rate"])
