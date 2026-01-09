@@ -1,10 +1,11 @@
 import pytorch_lightning as pl
 import torch
+from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
 
 
 class SentimentClassifier(pl.LightningModule):
-    def __init__(self, model_name="distilbert-base-uncased", learning_rate=2e-5):
+    def __init__(self, model_name: str = "distilbert-base-uncased", learning_rate: float = 2e-5):
         super().__init__()
         self.save_hyperparameters()  # Logs 'model_name' and 'learning_rate' automatically
 
@@ -12,37 +13,45 @@ class SentimentClassifier(pl.LightningModule):
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
         self.criterion = torch.nn.CrossEntropyLoss()
 
+        # Metrics
+        self.train_acc = Accuracy(task="multiclass", num_classes=2)
+        self.val_acc = Accuracy(task="multiclass", num_classes=2)
+        self.test_acc = Accuracy(task="multiclass", num_classes=2)
+
     def forward(self, input_ids, attention_mask, labels=None):
         return self.model(input_ids, attention_mask=attention_mask, labels=labels)
 
     def training_step(self, batch, batch_idx):
         outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
-        self.log("train_loss", loss, prog_bar=True)
+        preds = torch.argmax(outputs.logits, dim=1)
+
+        # Log training accuracy and loss
+        acc = self.train_acc(preds, batch["labels"])
+        self.log("train_loss", loss, prog_bar=True, on_step=True, on_epoch=True)
+        self.log("train_acc", acc, prog_bar=True, on_step=True, on_epoch=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
-
-        # Calculate accuracy
         preds = torch.argmax(outputs.logits, dim=1)
-        acc = (preds == batch["labels"]).float().mean()
 
-        self.log("val_loss", loss, prog_bar=True)
-        self.log("val_accuracy", acc, prog_bar=True)
+        # Log validation accuracy and loss
+        self.val_acc(preds, batch["labels"])
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True)
+        self.log("val_accuracy", self.val_acc, prog_bar=True, on_epoch=True)
         return loss
 
     def test_step(self, batch, batch_idx):
         outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
-
-        # Calculate accuracy
         preds = torch.argmax(outputs.logits, dim=1)
-        acc = (preds == batch["labels"]).float().mean()
 
-        self.log("test_loss", loss, prog_bar=True)
-        self.log("test_accuracy", acc, prog_bar=True)
+        # Log test accuracy and loss
+        self.test_acc(preds, batch["labels"])
+        self.log("test_loss", loss, prog_bar=True, on_epoch=True)
+        self.log("test_accuracy", self.test_acc, prog_bar=True, on_epoch=True)
         return loss
 
     def configure_optimizers(self):

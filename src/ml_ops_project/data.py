@@ -52,6 +52,8 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             shuffle=True,
             collate_fn=self.data_collator,
+            num_workers=self.config.num_workers,
+            pin_memory=True,
         )
 
     def val_dataloader(self):
@@ -59,6 +61,8 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             self.tokenized_datasets["validation"],  # type: ignore
             batch_size=self.batch_size,
             collate_fn=self.data_collator,
+            num_workers=self.config.num_workers,
+            pin_memory=True,
         )
 
     def test_dataloader(self):
@@ -66,4 +70,6 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             self.tokenized_datasets["test"],  # type: ignore
             batch_size=self.batch_size,
             collate_fn=self.data_collator,
+            num_workers=self.config.num_workers,
+            pin_memory=True,
         )

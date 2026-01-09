@@ -4,7 +4,7 @@ from pathlib import Path
 
 import hydra
 import pytorch_lightning as pl
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 
 # Allow running as a script: `uv run src/ml_ops_project/train.py`
@@ -14,7 +14,7 @@ if __package__ is None:
     if (src_dir / "ml_ops_project").exists():
         sys.path.insert(0, str(src_dir))
 
-from ml_ops_project.data import RottenTomatoesDataModule
+from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 from ml_ops_project.models import SentimentClassifier
 
 
@@ -74,7 +74,7 @@ def train(cfg: DictConfig):
             # Default: after each validation epoch
             # more often: every_n_epochs=1, every_n_train_steps=100, etc.
             # less often: every_n_epochs=5, every_n_train_steps=500, etc.
-            dirpath=cfg.training.checkpoint_path,
+            dirpath=cfg.training.checkpoint_dir,
             filename="epoch-{epoch:02d}-{val_accuracy:.3f}",  # Save with epoch and val_accuracy in filename
             monitor="val_accuracy",  # Monitor validation accuracy
             mode="max",  # Higher is better (for accuracy)
@@ -94,7 +94,6 @@ def train(cfg: DictConfig):
         devices=1,
         logger=wandb_logger,
         default_root_dir="hydra_logs",  # Clean logs
-        # logger=CSVLogger(save_dir="outputs", name="rotten_tomatoes"),  # Log metrics to CSV files
         callbacks=callbacks,  # Attach our checkpoint callback
         log_every_n_steps=10,  # Log metrics every 10 batches
     )
@@ -111,6 +110,7 @@ def train(cfg: DictConfig):
             wandb.finish()
         except Exception:
             pass
+
     # Test
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
