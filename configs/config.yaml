@@ -4,3 +4,4 @@ defaults:
   - _self_  # essentially allows the main config to override defaults
 
 experiment_name: "baseline_distilbert"
+data_dir: "data/processed"

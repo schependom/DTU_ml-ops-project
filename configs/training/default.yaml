@@ -2,3 +2,5 @@ batch_size: 64
 learning_rate: 2e-5
 max_epochs: 3
 seed: 42
+checkpoint_path: "models/"
+num_workers: 4
