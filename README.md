@@ -7,61 +7,65 @@ This repository contains the code and MLOps pipeline for a sentiment analysis pr
 ## Project Description
 
 ### Overall Goal of the Project
+
 The goal of this project is to build a **reproducible, testable, and deployable MLOps pipeline** for an NLP task. Specifically, we will train a model that predicts whether a Rotten Tomatoes **critic review** is positive or negative based solely on the review text. The focus is not achieving state-of-the-art performance, but rather building a clean, automated end-to-end workflow: data ingestion → preprocessing → training → evaluation → packaging → deployment, with strong MLOps practices around it.
 
 ---
 
 ### Data
+
 We will use the Kaggle dataset **“Rotten Tomatoes Movies and Critic Reviews Dataset”**  
 Source: https://www.kaggle.com/datasets/stefanoleone992/rotten-tomatoes-movies-and-critic-reviews-dataset
 
 The dataset includes thousands of critic reviews covering many movies, along with metadata. From this raw data, we will construct our modeling dataset using the review text and an associated outcome field.
 
 **Prediction target**
-- **Primary task: Binary sentiment classification**  
-  Map the dataset's fresh/rotten-style field (or equivalent) to:  
-  - `0 = negative`  
-  - `1 = positive`
+
+-   **Primary task: Binary sentiment classification**  
+    Map the dataset's fresh/rotten-style field (or equivalent) to:
+    -   `0 = negative`
+    -   `1 = positive`
 
 If the score/rating fields are clean enough, we may also explore a secondary task (regression or ordinal prediction), but the binary classifier is the main deliverable.
 
 **Data handling**
-- Clean and normalize review text (handle duplicates, missing text, odd encodings, very short reviews).
-- Deterministic **train/val/test** split with a fixed random seed.
-- Create a tiny “**smoke test subset**” (<1% of data) for CI/CD so the full pipeline can run fast on GitHub Actions.
-- Optional: **DVC** to version either the raw Kaggle archive, the processed dataset, or both.
+
+-   Clean and normalize review text (handle duplicates, missing text, odd encodings, very short reviews).
+-   Deterministic **train/val/test** split with a fixed random seed.
+-   Create a tiny “**smoke test subset**” (<1% of data) for CI/CD so the full pipeline can run fast on GitHub Actions.
+-   Optional: **DVC** to version either the raw Kaggle archive, the processed dataset, or both.
 
 ---
 
 ### Models
 
 #### Baseline (for grounding performance)
-- **TF-IDF + Logistic Regression**  
-  Simple, fast, and ensures the deep model actually adds value.
+
+-   **TF-IDF + Logistic Regression**  
+    Simple, fast, and ensures the deep model actually adds value.
 
 #### Primary model (deep learning)
-- **DistilBERT (`distilbert-base-uncased`)**, fine-tuned using Hugging Face `transformers`.
+
+-   **DistilBERT (`distilbert-base-uncased`)**, fine-tuned using Hugging Face `transformers`.
 
 DistilBERT is ~40% smaller and ~60% faster than BERT while retaining ~97% of its performance. This enables:
-- Faster experimentation
-- Practical hyperparameter sweeps (W&B)
-- CI-compatible training smoke tests
+
+-   Faster experimentation
+-   Practical hyperparameter sweeps (W&B)
+-   CI-compatible training smoke tests
 
 ---
 
 ### Training and Experimentation
+
 Our training pipeline will include:
-- **Config-driven runs** (Hydra or similar)
-- **Experiment tracking via W&B** (metrics, artifact storage, training curves)
-- Evaluation metrics: **accuracy, F1-score**, confusion matrix, and possibly ROC-AUC
-- Checkpointing + reproducible seeds
+
+-   **Config-driven runs** (Hydra or similar)
+-   **Experiment tracking via W&B** (metrics, artifact storage, training curves)
+-   Evaluation metrics: **accuracy, F1-score**, confusion matrix, and possibly ROC-AUC
+-   Checkpointing + reproducible seeds
 
 ---
-
-
-
-
-
 
 ## Project structure
 
@@ -326,7 +330,7 @@ To train the model using the default configuration (`configs/config.yaml`), run:
 
 ```bash
 uvr invoke train
-uvr src/ml_ops/train.py
+uvr python src/ml_ops_project/train.py
 uvr train # because we configured a script entry point in pyproject.toml
 ```
 
