@@ -1,11 +1,10 @@
-# ml_ops_project
+# MLOps Project
+
+_Group 7_
 
 Repository for the DTU Machine Learning Operations project.
 
-
 ## Project description
-
-
 
 ## Project structure
 
