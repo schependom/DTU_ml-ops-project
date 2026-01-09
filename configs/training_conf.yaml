@@ -1,0 +1,10 @@
+## Training hyperparameters configuration
+
+# learning_rate: 0.001
+# batch_size: 32
+# epochs: 10
+
+# optimizer: adam
+
+# loss_fn:
+#   _target_: torch.nn.CrossEntropyLoss
