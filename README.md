@@ -1,10 +1,37 @@
-# MLOps Project
+# MLOps Project: End-to-End Sentiment Analysis Pipeline
 
 _Group 7_
 
-Repository for the DTU Machine Learning Operations project.
+This repository contains the code and MLOps pipeline for a sentiment analysis project. The primary focus of this project is not the model architecture itself, but the operationalization of the machine learning lifecycle, including experimentation, reproducibility, deployment, and monitoring.
 
-## Project description
+## Project Description
+
+### Overall Goal of the Project
+
+The goal of this project is to build a robust, scalable MLOps framework for a Natural Language Processing (NLP) task. We aim to classify [`rotten_tomatoes`](https://huggingface.co/datasets/rotten_tomatoes) movie reviews as either "positive" or "negative" using deep learning.
+
+### Data
+
+As already mentioned, we will be using the **Rotten Tomatoes dataset**, a standard benchmark for sentiment analysis.
+
+-   **Source:** [[Hugging Face Datasets (rotten_tomatoes)](https://huggingface.co/datasets/rotten_tomatoes)](https://huggingface.co/datasets/rotten_tomatoes).
+-   **Modality:** Text (English).
+-   **Size:** The dataset contains approximately `[?]` sentence-level movie reviews.
+    -   **Train:** `[?]` samples.
+    -   **Validation:** `[?]` samples.
+    -   **Test:** `[?]` samples.
+-   **Labeling:** Binary classification (0: Negative, 1: Positive).
+-   **Data Footprint:** Extremely lightweight (< 5MB), making it ideal for rapid prototyping and CI/CD testing without heavy storage overhead, although using DVC would still be beneficial for versioning.
+
+### Primary model
+
+We will use the `distilbert-base-uncased` model. This DistilBERT model is a smaller, faster, cheaper, and lighter version of BERT. It retains 97% of BERT's performance but is 40% smaller and 60% faster to train.
+
+The lower computational cost of DistilBERT allows us to perform extensive hyperparameter sweeps (WandB) and run integration tests within the limits of standard CI environments (like GitHub Actions runners) without long wait times.
+
+### Frameworks
+
+We will use the PyTorch & Hugging Face Transformers frameworks.
 
 ## Project structure
 
