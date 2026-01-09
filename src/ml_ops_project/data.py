@@ -1,31 +1,51 @@
-from pathlib import Path
-
-import typer
-from torch.utils.data import Dataset
-
-
-class MyDataset(Dataset):
-    """My custom dataset."""
-
-    def __init__(self, data_path: Path) -> None:
-        self.data_path = data_path
-
-    def __len__(self) -> int:
-        """Return the length of the dataset."""
-        return 0
-
-    def __getitem__(self, index: int):
-        """Return a given sample from the dataset."""
-
-    def preprocess(self, output_folder: Path) -> None:
-        """Preprocess the raw data and save it to the output folder."""
+import pytorch_lightning as pl
+from datasets import load_dataset
+from torch.utils.data import DataLoader
+from transformers import AutoTokenizer, DataCollatorWithPadding
 
 
-def preprocess(data_path: Path, output_folder: Path) -> None:
-    print("Preprocessing data...")
-    dataset = MyDataset(data_path)
-    dataset.preprocess(output_folder)
+class RottenTomatoesDataModule(pl.LightningDataModule):
+    def __init__(self, model_name="distilbert-base-uncased", batch_size=32):
+        super().__init__()
+        self.model_name = model_name
+        self.batch_size = batch_size
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
+    def setup(self, stage=None):
+        # 1. Download the dataset
+        dataset = load_dataset("rotten_tomatoes")
 
-if __name__ == "__main__":
-    typer.run(preprocess)
+        # 2. Tokenize the data
+        # We only tokenize here. Padding happens in the DataCollator (dynamic padding)
+        def tokenize_function(examples):
+            return self.tokenizer(examples["text"], truncation=True)
+
+        self.tokenized_datasets = dataset.map(tokenize_function, batched=True)
+
+        # 3. Set format for PyTorch
+        self.tokenized_datasets.set_format(type="torch", columns=["input_ids", "attention_mask", "label"])
+
+        # 4. Create the DataCollator (handles padding)
+        self.data_collator = DataCollatorWithPadding(tokenizer=self.tokenizer)
+
+    def train_dataloader(self):
+        return DataLoader(
+            self.tokenized_datasets["train"],  # type: ignore
+            batch_size=self.batch_size,
+            shuffle=True,
+            collate_fn=self.data_collator,
+        )
+
+    def val_dataloader(self):
+        return DataLoader(
+            self.tokenized_datasets["validation"],  # type: ignore
+            batch_size=self.batch_size,
+            collate_fn=self.data_collator,
+        )
+
+    def test_dataloader(self):
+        return DataLoader(
+            self.tokenized_datasets["test"],  # type: ignore
+            batch_size=self.batch_size,
+            collate_fn=self.data_collator,
+        )
