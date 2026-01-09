@@ -1,12 +1,11 @@
-import sys
 import os
+import sys
 from pathlib import Path
 
 import hydra
 import pytorch_lightning as pl
 from omegaconf import DictConfig
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
-from pytorch_lightning.loggers import CSVLogger
 
 # Allow running as a script: `uv run src/ml_ops_project/train.py`
 # (src-layout packages otherwise need `python -m ml_ops_project.train`)
@@ -95,7 +94,7 @@ def train(cfg: DictConfig):
         devices=1,
         logger=wandb_logger,
         default_root_dir="hydra_logs",  # Clean logs
-        logger=CSVLogger(save_dir="outputs", name="rotten_tomatoes"),  # Log metrics to CSV files
+        # logger=CSVLogger(save_dir="outputs", name="rotten_tomatoes"),  # Log metrics to CSV files
         callbacks=callbacks,  # Attach our checkpoint callback
         log_every_n_steps=10,  # Log metrics every 10 batches
     )
