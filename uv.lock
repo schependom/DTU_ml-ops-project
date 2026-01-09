@@ -616,7 +616,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", specifier = "==0.128.0" },
     { name = "loguru", specifier = ">=0.7.3" },
-    { name = "torch", specifier = "==2.9.1", index = "https://download.pytorch.org/whl/cpu" },
+    { name = "torch", specifier = ">=2.9.1", index = "https://download.pytorch.org/whl/cpu" },
     { name = "typer", specifier = "==0.21.1" },
     { name = "uvicorn", specifier = "==0.40.0" },
 ]
