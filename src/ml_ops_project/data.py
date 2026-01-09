@@ -12,6 +12,7 @@ class MyDataset(Dataset):
 
     def __len__(self) -> int:
         """Return the length of the dataset."""
+        return 0
 
     def __getitem__(self, index: int):
         """Return a given sample from the dataset."""

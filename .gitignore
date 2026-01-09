@@ -4,7 +4,7 @@ docs/site/
 manual_test/
 
 # other local dev info
-.vscode/
+# .vscode/
 
 # Mac OS-specific storage files
 .DS_Store
@@ -178,4 +178,4 @@ cython_debug/
 
 # Added by post_gen_project.py script
 .env
-.vscode/
+# .vscode/
