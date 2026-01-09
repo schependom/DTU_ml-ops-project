@@ -70,3 +70,9 @@ line-length = 120
 
 [tool.coverage.run]
 omit = ["tests/*"]
+
+[tool.uv]
+required-environments = [
+    "sys_platform == 'darwin' and platform_machine == 'x86_64'",
+    "sys_platform == 'darwin' and platform_machine == 'arm64'"
+]
