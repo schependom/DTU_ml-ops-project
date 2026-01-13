@@ -101,8 +101,12 @@ def train(cfg: DictConfig):
     # Train
     trainer.fit(model, data_module)
 
+    # Test (uses best checkpoint from ModelCheckpoint above)
+    trainer.test(model=model, datamodule=data_module, ckpt_path="best")
+
+    # Close the W&B run *after* all Lightning stages are done (fit + test),
+    # otherwise Lightning may still try to log hyperparams/metrics during test.
     if wandb_logger is not None:
-        # Ensure the run is closed cleanly even if the process exits quickly after training
         try:
             import importlib
 
@@ -110,9 +114,6 @@ def train(cfg: DictConfig):
             wandb.finish()
         except Exception:
             pass
-
-    # Test
-    trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
 
 if __name__ == "__main__":
