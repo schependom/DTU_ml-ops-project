@@ -149,7 +149,7 @@ s214631, s204078, s202186, s251739
 >
 > Answer:
 
---- question 3 fill here ---
+We used the Hugging Face ecosystem to build our DistilBERT sentiment model. Specifically, `datasets` was used to fetch the Rotten Tomatoes dataset via `load_dataset("rotten_tomatoes")`, and `transformers` was used to load the pretrained DistilBERT model and tokenizer (`AutoModelForSequenceClassification`/`AutoTokenizer`) and handle dynamic padding (`DataCollatorWithPadding`). These packages, together with PyTorch Lightning gave us a high-quality pretrained NLP baseline and a standardized dataset + tokenization pipeline, so we could focus on the training/evaluation setup rather than implementing model architectures and preprocessing from scratch.
 
 ## Coding environment
 
@@ -167,7 +167,7 @@ s214631, s204078, s202186, s251739
 >
 > Answer:
 
---- question 4 fill here ---
+We managed dependencies using `uv`, with `pyproject.toml` as the source of declared dependencies and a committed lock file (`uv.lock`) to make installs reproducible across machines. When we needed to add or update a package, we used `uv add <package>`, which updates `pyproject.toml` and refreshes the lock file with resolved, pinned versions. For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving). After that, project commands are run through `uv` (e.g., `uv run ...`) to ensure execution happens inside the locked environment.
 
 ### Question 5
 
@@ -180,7 +180,7 @@ s214631, s204078, s202186, s251739
 >
 > Answer:
 
---- question 5 fill here ---
+We initialized the repository from the `DTU_ml-ops-template` cookiecutter and kept the overall structure. The core code lives in a `src/` “src-layout” Python package (`src/ml_ops_project/`) containing our pipeline entry points and modules (data module, model definition, training and evaluation scripts). We filled out `tests/` with unit tests for the main components, and used `configs/` for Hydra configuration to make training/evaluation runs reproducible and parameterized. We also used the template’s supporting folders, including `data/` and /`models/` for datasets and saved checkpoints. A small deviation from a “clean” template is that we keep experiment artifacts produced by the tooling (e.g., `outputs/`, `hydra_logs/`, and `wandb/` run logs) in the repo during development to make runs easy to inspect and compare.
 
 ### Question 6
 
