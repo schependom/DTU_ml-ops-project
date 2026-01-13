@@ -1,0 +1,5 @@
+## Model architecture configuration
+
+# dropout_rate: 0.5
+# num_layers: 3
+# ...

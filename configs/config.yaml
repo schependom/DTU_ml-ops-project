@@ -1,6 +1,7 @@
 defaults:
   - model: distilbert
   - training: default
+  - wandb: default
   - _self_  # essentially allows the main config to override defaults
 
 experiment_name: "baseline_distilbert"
