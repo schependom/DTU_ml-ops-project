@@ -28,7 +28,7 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
         self.batch_size = config.batch_size
         self.tokenizer = AutoTokenizer.from_pretrained(config.model_name)
 
-    def prepare_data(self):
+    def prepare_data(self, force_download: bool = False):
         """
         Runs on the main process only.
         1. Checks if data exists at data_dir.
@@ -36,11 +36,11 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
         3. Renames columns (label -> labels).
         4. Saves the cleaned data to data_dir (GCP Bucket).
         """
-        # Check if the data is already saved to the bucket/disk
-        if not os.path.exists(self.config.data_dir):
+        # If data/ contains something else apart from .gitkeep
+        if force_download or not (os.path.exists(self.config.data_dir) and len(os.listdir(self.config.data_dir)) > 1):
             print(f"Downloading and processing data to {self.config.data_dir}...")
 
-            # 1. Download
+            # Download
             dataset = load_dataset("rotten_tomatoes")
             raw_length = len(dataset["train"]) + len(dataset["validation"]) + len(dataset["test"])
             logger.info(f"Downloaded {raw_length} samples.")
@@ -50,16 +50,15 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             logger.info(f"After cleaning, {cleaned_length} samples remain.")
             logger.info(f"Dropped {raw_length - cleaned_length} samples with missing/empty text.")
 
-            # 2. Rename (Preprocessing moved here)
+            # Rename
             if "label" in dataset["train"].column_names:
                 dataset = dataset.rename_column("label", "labels")
 
-            # 3. Save to disk/GCP
-            # This saves the Arrow files directly to the path
+            # Save to disk/GCP
             dataset.save_to_disk(self.config.data_dir)
             print("Data saved successfully.")
         else:
-            print(f"Data found at {self.config.data_dir}, skipping download and rename.")
+            print(f"Data found at {self.config.data_dir}, skipping download. Use force_download=True to re-download.")
 
     def setup(self, stage=None):
         """
