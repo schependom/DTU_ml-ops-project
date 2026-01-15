@@ -184,3 +184,4 @@ hydra_logs
 outputs/
 models/*.ckpt
 /wandb
+data/
