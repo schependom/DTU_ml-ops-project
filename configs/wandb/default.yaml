@@ -1,7 +1,7 @@
 enabled: true
 
 # W&B basics
-project: "MLOps"
+# project: "MLOps" # TODO modify to use .ENV
 entity: null  # set to your W&B entity/username, or leave null
 
 # W&B mode: "online" | "offline" | "disabled"
