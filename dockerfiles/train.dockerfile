@@ -28,8 +28,8 @@ COPY src/ src/
 COPY data/ data/
 COPY configs/ configs/
 COPY tests/ tests/
-COPY README.md README.md
-COPY LICENSE LICENSE
+# COPY README.md README.md
+# COPY LICENSE LICENSE
 
 ##
 # Install our project dependencies
