@@ -2,17 +2,19 @@ import os
 
 import hydra
 import pytorch_lightning as pl
+import wandb
 from dotenv import load_dotenv
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
-import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 from ml_ops_project.models import SentimentClassifier
 
 load_dotenv()
+logger.add("logs/train.log", rotation="500 MB")
+logger.add("logs/train_alerts.log", level="WARNING", rotation="500 MB")
 
 
 def setup_wandb(cfg: DictConfig) -> bool:
@@ -74,11 +76,14 @@ def train(cfg: DictConfig):
         persistent_workers=cfg.training.persistent_workers,
         pin_memory=cfg.training.pin_memory,
     )
+    logger.info("Setting up data-loaders with the following configuration:")
+    logger.info(print(config))
 
     # Initialize Data Module
-    data_module = RottenTomatoesDataModule(config)
+    data_module = RottenTomatoesDataModule(config, logger=logger)
 
     # Initialize Model
+    logger.info(f"Configuring model: {cfg.model.name}, with optimizer: {cfg.optimizer}")
     model = SentimentClassifier(model_name=cfg.model.name, optimizer_cfg=cfg.optimizer)
 
     # Callbacks are plugins that execute code at certain points in the training loop.
@@ -113,11 +118,16 @@ def train(cfg: DictConfig):
     )
 
     # Train
+    logger.info("Training model")
     trainer.fit(model, data_module)
 
+    logger.success("Done!")
+
     # Test (uses best checkpoint from ModelCheckpoint above)
+    logger.info("Testing model")
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
+    logger.success("Done!")
     # Close the W&B run *after* all Lightning stages are done (fit + test),
     # otherwise Lightning may still try to log hyperparams/metrics during test.
     if wandb_logger is not None:
