@@ -46,7 +46,7 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Submit build
-      run: gcloud builds submit . --config GCP/cloudbuild.yaml --substitutions=_IMAGE_NAME="my-instance"
+      run: gcloud builds submit . --config GCP/cloudbuild.yaml --substitutions=_IMAGE_NAME="ml-ops-proj-instance"
 
     - name: Trigger Vertex AI Training Job
       run: |
@@ -56,4 +56,4 @@ jobs:
     - name: Stop instance
       run: |
         echo "Stopping GCP instance..."
-        gcloud compute instances stop my-instance --zone=europe-west4-a
+        gcloud compute instances stop ml-ops-proj-instance --zone=europe-west4-a

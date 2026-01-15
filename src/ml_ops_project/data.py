@@ -1,9 +1,11 @@
 import os
 from dataclasses import dataclass
 
+import hydra
 import pytorch_lightning as pl
 from datasets import load_dataset, load_from_disk
 from loguru import logger
+from omegaconf import DictConfig
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, DataCollatorWithPadding
 
@@ -109,3 +111,18 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             num_workers=self.config.num_workers,
             pin_memory=True,
         )
+
+
+@hydra.main(config_path="../../configs", config_name="config", version_base="1.2")
+def load_data(cfg: DictConfig):
+    data_config = DataConfig(
+        data_dir=cfg.data_dir,
+    )
+
+    data_module = RottenTomatoesDataModule(data_config)
+
+    data_module.prepare_data()
+
+
+if __name__ == "__main__":
+    load_data()
