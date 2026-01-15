@@ -320,11 +320,8 @@ To use Weights & Biases for experiment tracking, you need to set up your environ
 WANDB_API_KEY=your_api_key_here
 WANDB_ENTITY=your_entity_name
 WANDB_PROJECT=your_project_name
+WANDB_ORGANIZATION=your_organization_name
 ```
-
-The training script automatically loads these variables. You can find your API key in your WandB settings.
-
-### Training
 
 To train the model using the default configuration (`configs/config.yaml`), run either of the following commands:
 
@@ -364,12 +361,10 @@ uvr src/ml_ops/train.py wandb.enabled=false
 
 #### Hyperparameter Sweeps (WandB)
 
-To run a hyperparameter sweep to find the best model configuration:
-
 1.  **Initialize the sweep**:
 
     ```bash
-    wandb sweep configs/sweep.yaml
+    uv run wandb sweep configs/wandb/sweep.yaml
     ```
 
     This prints a sweep ID (e.g., `entity/project/sweep_ID`).
@@ -377,17 +372,17 @@ To run a hyperparameter sweep to find the best model configuration:
 2.  **Start the agent**:
 
     ```bash
-    wandb agent entity/project/sweep_ID
+    uv run wandb agent entity/project/sweep_ID
     ```
 
-    The agent will run multiple training jobs with arguments defined in `parameters` section of `configs/sweep.yaml`.
+    The agent will run multiple training jobs with arguments defined in `parameters` section of `configs/wandb/sweep.yaml`.
 
-3.  **Link the best model to the registry** (optional):
+3.  **Link the best model to the registry**:
 
     After the sweep is complete, you can link the best model to a WandB model registry using the provided script:
 
     ```bash
-    uvr src/ml_ops/link_best_model.py --sweep-id entity/project/sweep_ID
+    uvr src/ml_ops_project/link_best_model.py --sweep-id entity/project/sweep_ID
     ```
 
 #### Model Registry Management
@@ -479,7 +474,7 @@ docker run --rm --name train train:latest
 Run training with **custom** parameters:
 
 ```bash
-docker run --rm --name train train:latest conv1.in_channels=1 loss_fn=cross_entropy optimizer=adam optimizer.lr=0.01
+docker run --rm --name train train:latest <parameters>
 ```
 
 Run training with a custom config file (must be included in the image or mounted as a volume):

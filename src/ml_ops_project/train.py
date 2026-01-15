@@ -62,7 +62,8 @@ def train(cfg: DictConfig):
     using_wandb = setup_wandb(cfg)
     if using_wandb:
         # TODO customize WandbLogger params as needed
-        wandb_logger = WandbLogger()
+        # log_model="all" to log all checkpoints saved by ModelCheckpoint
+        wandb_logger = WandbLogger(log_model="all", checkpoint_name="model")
     else:
         wandb_logger = None
 

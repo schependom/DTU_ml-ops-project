@@ -1,0 +1,447 @@
+<p>sis Pipeline</p>
+<p><em>Group 7</em></p>
+<p>This repository contains the code and MLOps pipeline for a sentiment analysis project. The primary focus of this project is not the model architecture itself, but the operationalization of the machine learning lifecycle, including experimentation, reproducibility, deployment, and monitoring.</p>
+<h2>Project Description</h2>
+<h3>Overall Goal of the Project</h3>
+<p>The goal of this project is to build a <strong>reproducible, testable, and deployable MLOps pipeline</strong> for an NLP task. Specifically, we will train a model that predicts whether a Rotten Tomatoes <strong>critic review</strong> is positive or negative based solely on the review text. The focus is not achieving state-of-the-art performance, but rather building a clean, automated end-to-end workflow: data ingestion → preprocessing → training → evaluation → packaging → deployment, with strong MLOps practices around it.</p>
+<hr />
+<h3>Data</h3>
+<p>We will use the Kaggle dataset <strong>"Rotten Tomatoes Movies and Critic Reviews Dataset"</strong><br />
+Source: https://www.kaggle.com/datasets/stefanoleone992/rotten-tomatoes-movies-and-critic-reviews-dataset</p>
+<p>The dataset includes thousands of critic reviews covering many movies, along with metadata. From this raw data, we will construct our modeling dataset using the review text and an associated outcome field.</p>
+<p><strong>Prediction target</strong></p>
+<ul>
+<li><strong>Primary task: Binary sentiment classification</strong><br />
+    Map the dataset's fresh/rotten-style field (or equivalent) to:<ul>
+<li><code>0 = negative</code></li>
+<li><code>1 = positive</code></li>
+</ul>
+</li>
+</ul>
+<p>If the score/rating fields are clean enough, we may also explore a secondary task (regression or ordinal prediction), but the binary classifier is the main deliverable.</p>
+<p><strong>Data handling</strong></p>
+<ul>
+<li>Clean and normalize review text (handle duplicates, missing text, odd encodings, very short reviews).</li>
+<li>Deterministic <strong>train/val/test</strong> split with a fixed random seed.</li>
+<li>Create a tiny "<strong>smoke test subset</strong>" (&lt;1% of data) for CI/CD so the full pipeline can run fast on GitHub Actions.</li>
+<li><strong>DVC</strong> to version either the raw Kaggle archive, the processed dataset, or both.</li>
+</ul>
+<hr />
+<h3>Models</h3>
+<h4>Baseline (for grounding performance)</h4>
+<ul>
+<li><strong>TF-IDF + Logistic Regression</strong><br />
+    Simple, fast, and ensures the deep model actually adds value.</li>
+</ul>
+<h4>Primary model (deep learning)</h4>
+<ul>
+<li><strong>DistilBERT (<code>distilbert-base-uncased</code>)</strong>, fine-tuned using Hugging Face <code>transformers</code>.</li>
+</ul>
+<p>DistilBERT is ~40% smaller and ~60% faster than BERT while retaining ~97% of its performance. This enables:</p>
+<ul>
+<li>Faster experimentation</li>
+<li>Practical hyperparameter sweeps (W&amp;B)</li>
+<li>CI-compatible training smoke tests</li>
+</ul>
+<hr />
+<h3>Training and Experimentation</h3>
+<p>Our training pipeline will include:</p>
+<ul>
+<li><strong>Config-driven runs</strong> (Hydra or similar)</li>
+<li><strong>Experiment tracking via W&amp;B</strong> (metrics, artifact storage, training curves)</li>
+<li>Evaluation metrics: <strong>accuracy, F1-score</strong>, confusion matrix, and possibly ROC-AUC</li>
+<li>Checkpointing + reproducible seeds</li>
+</ul>
+<hr />
+<h2>Project structure</h2>
+<p>The directory structure of the project looks like this:</p>
+<p><code>txt
+├── .github/                  # Github actions and dependabot
+│   ├── dependabot.yaml
+│   └── workflows/
+│       └── tests.yaml
+├── configs/                  # Configuration files
+├── data/                     # Data directory
+│   ├── processed
+│   └── raw
+├── dockerfiles/              # Dockerfiles
+│   ├── api.dockerfile
+│   └── train.dockerfile
+├── docs/                     # Documentation
+│   ├── mkdocs.yml
+│   └── source/
+│       └── index.md
+├── models/                   # Trained models
+├── notebooks/                # Jupyter notebooks
+├── reports/                  # Reports
+│   └── figures/
+├── src/                      # Source code
+│   ├── project_name/
+│   │   ├── __init__.py
+│   │   ├── api.py
+│   │   ├── data.py
+│   │   ├── evaluate.py
+│   │   ├── models.py
+│   │   ├── train.py
+│   │   └── visualize.py
+└── tests/                    # Tests
+│   ├── __init__.py
+│   ├── test_api.py
+│   ├── test_data.py
+│   └── test_model.py
+├── .gitignore
+├── .pre-commit-config.yaml
+├── LICENSE
+├── pyproject.toml            # Python project file
+├── README.md                 # Project README
+└── tasks.py                  # Project tasks</code></p>
+<p>Created using <a href="https://github.com/schependom/DTU_ml-ops-template">DTU_ml-ops-template</a>,
+a <a href="https://github.com/cookiecutter/cookiecutter">cookiecutter template</a> based on <a href="https://github.com/SkafteNicki/mlops_template">mlops_template</a> by Nicki Skafte.</p>
+<h2>Installation and notes on using <code>uv</code></h2>
+<h3>Prerequisites</h3>
+<h4>VSCode extensions</h4>
+<p>You need to download these extensions in order to make the settings in <code>.vscode/settings.json</code> to work properly:</p>
+<ul>
+<li><a href="https://marketplace.visualstudio.com/items?itemName=astral-sh.ty"><code>ty</code></a></li>
+<li>
+<h2><a href="https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff-vscode"><code>ruff</code></a></h2>
+</li>
+</ul>
+<h4><code>uv run</code> alias</h4>
+<p>I recommend creating an alias <code>uvr</code> for <code>uv run</code> to make running scripts easier.
+Add the following line to your <code>~/.bashrc</code> (or equivalent on Windows/Linux):</p>
+<p><code>bash
+echo "alias uvr='uv run'" &gt;&gt; ~/.bashrc
+source ~/.bashrc</code></p>
+<h3>Virtual environment</h3>
+<p>Initialize the virtual environment and install dependencies with:</p>
+<p><code>bash
+uv sync</code></p>
+<p>Activate the virtual environment with:</p>
+<p><code>bash
+source .venv/bin/activate</code></p>
+<p>Install an optional dependency group with:</p>
+<p><code>bash
+uv sync --group &lt;group-name&gt;</code></p>
+<p>Install all dependency groups with:</p>
+<p><code>bash
+uv sync --all-groups</code></p>
+<h3>Dependency management</h3>
+<p>Add a new dependency with (or add it straight to <code>pyproject.toml</code> and run <code>uv sync</code>):</p>
+<p>```bash
+uv add <package-name></p>
+<h1>e.g. uv add numpy</h1>
+<p>```</p>
+<p>To add a development dependency, use:</p>
+<p>```bash
+uv add <package-name> --group dev</p>
+<h1>e.g. uv add pytest --group dev</h1>
+<p>```</p>
+<h3>Running scripts</h3>
+<p>Running a script inside the virtual environment can be done with:</p>
+<p>```bash
+uv run <script-name>.py</p>
+<h1>e.g. uv run src/ml_ops/train.py</h1>
+<p>```</p>
+<p>This can get quite tedious, so we can make an alias <code>uvr</code> for this:</p>
+<p><code>bash
+echo "alias uvr='uv run'" &gt;&gt; ~/.bashrc
+source ~/.bashrc</code></p>
+<p>Now you can run scripts like this:</p>
+<p>```bash
+uvr script.py</p>
+<h1>e.g. uvr src/ml_ops/train.py</h1>
+<p>```</p>
+<h3>Other <code>uv</code> commands</h3>
+<p>Change Python version with:</p>
+<p><code>bash
+uv python pin &lt;version&gt;</code></p>
+<h3>Using <code>uvx</code> for global tools</h3>
+<p><code>uvx</code> can be used to install <em>tools</em> (which are external command line tools, not libraries used in your code) globally on your machine. Tools include <code>black</code>, <code>ruff</code>, <code>pytest</code> or the simple <code>cowsay</code>. You can install such tools with <code>uvx</code>. For example:</p>
+<p><code>bash
+uvx add cowsay</code></p>
+<p>Then you can run the tool like this:</p>
+<p><code>bash
+uvx cowsay -t "muuh"</code></p>
+<p>If you run above command without having installed <code>cowsay</code> with <code>uvx</code>, it will install it for you automatically.</p>
+<h3>Enabling pre-commit</h3>
+<p><code>bash
+uvr pre-commit install
+uvr pre-commit run --all-files</code></p>
+<h2>Usage</h2>
+<h3>Version control</h3>
+<p>Clone the repo:</p>
+<p><code>bash
+git clone git@github.com:schependom/DTU_ML-Operations.git
+cd DTU_ML-Operations</code></p>
+<p>Authenticate DVC using SSH (make sure you have access to the remote):</p>
+<p><code>bash
+dvc remote modify --local myremote auth ssh</code></p>
+<p>Pull data from DVC remote:</p>
+<p><code>bash
+dvc pull</code></p>
+<p>You can use <code>invoke</code> to run common tasks. To list available tasks, run:</p>
+<p>```bash
+invoke --list</p>
+<h1>Available tasks:</h1>
+<h1></h1>
+<h1>build-docs        Build documentation.</h1>
+<h1>docker-build      Build docker images.</h1>
+<h1>preprocess-data   Preprocess data.</h1>
+<h1>serve-docs        Serve documentation.</h1>
+<h1>test              Run tests.</h1>
+<h1>train             Train model.</h1>
+<p>```</p>
+<p>Now, to run a task, use:</p>
+<p>```bash
+invoke <task-name></p>
+<h1>e.g. invoke preprocess-data</h1>
+<p>```</p>
+<p>After preprocessing data (v2), you can push (Data Version Control [DVC]) changes to the remote with:</p>
+<p><code>``bash
+dvc add data
+git add data.dvc # or</code>git add .`
+git commit -m "Add new data"
+git tag -a v2.0 -m "Version 2.0"</p>
+<h1>Why tag? To mark a specific point in git history as important (e.g., a release)</h1>
+<h1>-a to create an annotated tag</h1>
+<h1>-m to add a message to the tag</h1>
+<p>dvc push
+git push origin main --tags
+```</p>
+<p>Or simply use (possible thanks to <code>tasks.py</code>):</p>
+<p><code>bash
+uvr invoke dvc --folder 'data' --message 'Add new data'</code></p>
+<p>To go back to a specific version later, you can checkout the git tag:</p>
+<p><code>bash
+git switch v1.0 # or `git checkout v1.0`
+dvc checkout</code></p>
+<p>To go back to the latest version, use:</p>
+<p><code>bash
+git switch main # or `git checkout main`
+dvc checkout</code></p>
+<h3>Environment Setup (WandB)</h3>
+<p>To use Weights &amp; Biases for experiment tracking, you need to set up your environment variables. Create a <code>.env</code> file in the project root with the following content:</p>
+<p><code>bash
+WANDB_API_KEY=your_api_key_here
+WANDB_ENTITY=your_entity_name
+WANDB_PROJECT=your_project_name
+WANDB_ORGANIZATION=your_organization_name</code></p>
+<p>To train the model using the default configuration (<code>configs/config.yaml</code>), run either of the following commands:</p>
+<p><code>bash
+uvr invoke train
+uvr python src/ml_ops_project/train.py
+uvr train # because we configured a script entry point in pyproject.toml</code></p>
+<p><strong>Training Process Overview:</strong>
+When you run the training script:</p>
+<ol>
+<li><strong>Configuration</strong>: Hydra loads and composes configuration from <code>configs/</code>.</li>
+<li><strong>Environment</strong>: The script loads environment variables from <code>.env</code>.</li>
+<li><strong>WandB</strong>: Initializes tracking (if enabled) using credentials from <code>.env</code>.</li>
+<li><strong>Data</strong>: Loads processed MNIST data.</li>
+<li><strong>Execution</strong>: Runs the training loop, logging loss and accuracy.</li>
+<li><strong>Artifacts</strong>: Saves the trained model to <code>models/model.pth</code> and training plots to <code>reports/figures/</code>.</li>
+</ol>
+<h4>Custom Hyperparameters (Hydra)</h4>
+<p>You can override any configuration parameter from the command line:</p>
+<p>```bash</p>
+<h1>Change learning rate and batch size</h1>
+<p>uvr src/ml_ops/train.py optimizer.lr=0.01 batch_size=64</p>
+<h1>Change number of epochs</h1>
+<p>uvr src/ml_ops/train.py epochs=20</p>
+<h1>Switch optimizer config group (e.g. to nesterov.yaml)</h1>
+<p>uvr src/ml_ops/train.py optimizer=nesterov</p>
+<h1>Disable WandB for a specific run</h1>
+<p>uvr src/ml_ops/train.py wandb.enabled=false
+```</p>
+<h4>Hyperparameter Sweeps (WandB)</h4>
+<p>To run a hyperparameter sweep to find the best model configuration:</p>
+<ol>
+<li>
+<p><strong>Initialize the sweep</strong>:</p>
+<p><code>bash
+wandb sweep configs/sweep.yaml</code></p>
+<p>This prints a sweep ID (e.g., <code>entity/project/sweep_ID</code>).</p>
+</li>
+<li>
+<p><strong>Start the agent</strong>:</p>
+<p><code>bash
+wandb agent entity/project/sweep_ID</code></p>
+<p>The agent will run multiple training jobs with arguments defined in <code>parameters</code> section of <code>configs/sweep.yaml</code>.</p>
+</li>
+<li>
+<p><strong>Link the best model to the registry</strong> (optional):</p>
+<p>After the sweep is complete, you can link the best model to a WandB model registry using the provided script:</p>
+<p><code>bash
+uvr src/ml_ops/link_best_model.py --sweep-id entity/project/sweep_ID</code></p>
+</li>
+</ol>
+<h4>Model Registry Management</h4>
+<p>To manage your models in the WandB Model Registry, we provide two scripts:</p>
+<ol>
+<li>
+<p><strong>Link Best Model from Sweep</strong> (<code>link_best_model.py</code>):
+    Links the best model from a specific hyperparameter sweep.</p>
+<p><code>bash
+uvr src/ml_ops/link_best_model.py --sweep-id &lt;sweep_id&gt;</code></p>
+</li>
+<li>
+<p><strong>Auto-Register Best Model from History</strong> (<code>auto_register_best_model.py</code>):
+    Scans all versions of a source artifact (e.g., <code>corrupt_mnist_model</code>) and links the one with the best metadata metric (e.g., highest <code>accuracy</code>) to the registry with "best" and "staging" aliases.</p>
+<p><code>bash
+uvr python src/ml_ops/promote_model.py \
+    --project-name "ml_ops_corrupt_mnist" \
+    --source-artifact "corrupt_mnist_model" \
+    --target-registry "Model-registry" \
+    --target-collection "corrupt-mnist" \
+    --metric-name "accuracy"</code></p>
+</li>
+</ol>
+<h4>Custom Configuration Files</h4>
+<p>You can also create a new config file <code>configs/custom_config.yaml</code> with:</p>
+<p><code>yaml
+defaults:
+    - my_new_model_conf
+    - my_new_training_conf
+    - optimizer: my_preferred_optimizer
+    - _self_
+wandb:
+    enabled: true # or false to disable
+use_my_new_model_conf: true
+use_my_new_training_conf: true</code></p>
+<p>Then run training with the new config:</p>
+<p><code>bash
+uvr src/ml_ops/train.py --config-name=custom_config</code></p>
+<h2>Containerization</h2>
+<p>Docker containers provide isolated, reproducible environments for training and evaluating models. This project includes optimized Dockerfiles for both operations.</p>
+<h3>Building Docker Images</h3>
+<p>Build the training image:</p>
+<p><code>bash
+docker build -f dockerfiles/train.dockerfile . -t train:latest</code></p>
+<p>Build the evaluation image:</p>
+<p><code>bash
+docker build -f dockerfiles/evaluate.dockerfile . -t evaluate:latest</code></p>
+<details>
+<summary>Cross-platform builds (e.g., building for AMD64 on ARM Mac)</summary>
+
+Some systems (like Apple M1/M2 Macs) use ARM architecture, which can lead to compatibility issues when sharing Docker images with others using AMD64 architecture (common in cloud and many desktops). To ensure compatibility, you can build images for a specific platform using the `--platform` flag.
+
+```bash
+# ARM Mac (Apple Silicon) -> AMD64
+docker build --platform linux/amd64 -f dockerfiles/train.dockerfile . -t train:latest
+
+# Windows on AMD64 -> ARM64 (e.g. Apple Silicon)
+docker build --platform linux/arm64 -f dockerfiles/train.dockerfile . -t train:latest
+```
+
+</details>
+
+<h3>Running Docker Containers</h3>
+<p>Run training (using configurations in <code>configs/</code>):</p>
+<p><code>bash
+docker run --rm --name train train:latest</code></p>
+<p>Run training with <strong>custom</strong> parameters:</p>
+<p><code>bash
+docker run --rm --name train train:latest &lt;parameters&gt;</code></p>
+<p>Run training with a custom config file (must be included in the image or mounted as a volume):</p>
+<p>```bash</p>
+<h1>assumes custom_config.yaml is in <code>configs/</code></h1>
+<p>docker run --rm --name train train:latest --config-name custom_config</p>
+<h1>mounts custom_config.yaml from host</h1>
+<p>docker run --rm --name train -v $(pwd)/configs/custom_config.yaml:/configs/custom_config.yaml train:latest --config-name custom_config
+```</p>
+<p>Run evaluation (requires model file in image or mounted as volume):</p>
+<p>```bash
+docker run --rm --name eval evaluate:latest model_checkpoint=models/model.pth</p>
+<h1>Mounted</h1>
+<p>docker run --rm --name eval -v $(pwd)/models/model.pth:/models/model.pth evaluate:latest model_checkpoint=/models/model.pth
+```</p>
+<h3>Mounting volumes</h3>
+<p>Use volumes to share data between host and container.</p>
+<h4>When to mount volumes?</h4>
+<p>If data changes frequently, or if you want to automatically sync outputs (models, reports) to your host machine, use mounted volumes:</p>
+<ul>
+<li>Models (<code>models/</code>)</li>
+<li>Configs (<code>configs/</code>)</li>
+</ul>
+<h4>When not to mount volumes?</h4>
+<p>If data is static and large, or if you want a fully self-contained container, <strong>copy</strong> data into the image during build, don't mount volumes:</p>
+<h2>-   Data (<code>data/</code>)</h2>
+<h4>Examples</h4>
+<p>Run evaluation with mounted volumes (keeps models and configs on host):</p>
+<p>```bash</p>
+<h1>Mount model and data directories</h1>
+<p>docker run --rm --name eval \
+  -v $(pwd)/models:/models \
+  -v $(pwd)/configs:/configs \
+  evaluate:latest \
+  model_checkpoint=/models/model.pth</p>
+<h1>Or mount specific files</h1>
+<p>docker run --rm --name eval \
+  -v $(pwd)/models/model.pth:/models/model.pth \
+  -v $(pwd)/configs/config.yaml:/configs/config.yaml \
+  evaluate:latest \
+  model_checkpoint=/models/model.pth
+```</p>
+<h3>Interactive Mode</h3>
+<p>Debug or explore the container interactively:</p>
+<p><code>bash
+docker run --rm -it --entrypoint sh train:latest</code></p>
+<p>Exit the container with the <code>exit</code> command.</p>
+<h3>Copying Files from Container</h3>
+<p>After training, copy outputs from container to host:</p>
+<p>```bash</p>
+<h1>Trained model</h1>
+<p>docker cp experiment1:/models/model.pth models/model.pth</p>
+<h1>Training statistics figure</h1>
+<p>docker cp experiment1:/reports/figures/training_statistics.png reports/figures/training_statistics.png
+```</p>
+<p>If you mounted <code>models/</code> and <code>reports/</code> as volumes using respectively <code>-v $(pwd)/models:/models</code> and <code>-v $(pwd)/reports:/reports</code>, the files will already be on your own machine after training.</p>
+<h3>Container and Image Management</h3>
+<h4>Containers</h4>
+<p>List all <strong>containers</strong> (running and stopped):</p>
+<p>```bash
+docker ps -a</p>
+<h1>or <code>docker container ls -a</code></h1>
+<p>```</p>
+<p>Remove a specific container:</p>
+<p><code>bash
+docker rm train</code></p>
+<p>Clean up stopped containers:</p>
+<p><code>bash
+docker container prune</code></p>
+<h4>Images</h4>
+<p>List all <strong>images</strong>:</p>
+<p><code>bash
+docker images</code></p>
+<p>Remove a specific image (only if you want to rebuild or no longer need it):</p>
+<p><code>bash
+docker rmi train:latest</code></p>
+<p>Clean up dangling images (unnamed <code>&lt;none&gt;</code> images from rebuilds):</p>
+<p><code>bash
+docker image prune</code></p>
+<h4>System-wide Cleanup</h4>
+<p>Clean up everything (stopped containers, dangling images, unused networks):</p>
+<p><code>bash
+docker system prune</code></p>
+<h3>Docker Best Practices</h3>
+<ul>
+<li><strong>Use <code>--rm</code></strong>: Automatically remove containers after they exit to avoid clutter</li>
+<li><strong>Mount volumes</strong>: For <strong>models</strong> (<code>models/</code>), <strong>outputs</strong> (<code>reports/</code>) and <strong>configs</strong> (<code>configs/</code>) instead of copying files</li>
+<li><strong>Copy, and don't mount, static data</strong>: For large, unchanging datasets (<code>data/</code>) to keep container self-contained</li>
+<li><strong>Use <code>.dockerignore</code></strong>: Exclude unnecessary files from build context for faster builds</li>
+<li><strong>Name your containers</strong>: Makes them easier to reference with <code>--name</code></li>
+<li><strong>Tag images properly</strong>: Use meaningful tags beyond <code>latest</code> for versioning</li>
+</ul>
+<h2>GCP</h2>
+<p>To get started with Google Cloud Platform (GCP), follow these steps.</p>
+<p>Log in to your GCP account.</p>
+<p><code>bash
+gcloud auth login
+gcloud auth application-default login</code></p>
+<p>Set the project</p>
+<p><code>bash
+gcloud config set project dtumlops-484016</code></p>
+<p>I have created the following bucket:</p>
+<p><code>bash
+gs://ml_ops_project_g7</code></p>
