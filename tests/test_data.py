@@ -1,49 +1,47 @@
 import pytest
 import torch
+from hydra import compose, initialize
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
-from ml_ops_project.models import SentimentClassifier
-
-
-def test_model_forward_pass(batch_size, seq_length):
-    # 1. Initialize model
-    model = SentimentClassifier()
-    
-    # 2. Create mock data matching the dictionary format in your forward/training_step
-    # DistilBERT vocabulary size is 30522
-    input_ids = torch.randint(0, 30522, (batch_size, seq_length))
-    attention_mask = torch.ones((batch_size, seq_length))
-    labels = torch.randint(0, 2, (batch_size,))
-    
-    # 3. Run forward pass and check for crashes
-    try:
-        output = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
-    except Exception as e:
-        pytest.fail(f"Model failed forward pass with seq_length {seq_length}: {e}")
-    
-    # 4. Verify output dimensions
-    # Sequence classification models return logits of shape [batch_size, num_labels]
-    assert output.logits.shape == (batch_size, 2)
-
 
 
 def test_datamodule_batch_dimensions():
-    # 1. Setup config (use a small batch for testing)
-    config = DataConfig(batch_size=4, num_workers=0)
+    # Setup config (use a small batch for testing)
+    with initialize(version_base="1.2", config_path="../../configs"):
+        cfg = compose(config_name="config")
+        config = DataConfig(batch_size=4, num_workers=0, data_dir=cfg.data_dir)
+
     dm = RottenTomatoesDataModule(config)
     
-    # 2. Prepare and Setup (this mimics the Lightning Trainer flow)
+    # Prepare and Setup (this mimics the Lightning Trainer flow)
     dm.prepare_data()
     dm.setup(stage="fit")
     
-    # 3. Get one batch
+    # Get one batch
     train_loader = dm.train_dataloader()
     batch = next(iter(train_loader))
+
+    # Print Statements for Debugging 
+    print(f"\n--- Batch Debug Info ---")
+    print(f"Keys in batch: {list(batch.keys())}")
+    print(f"Input IDs shape: {batch['input_ids'].shape}")
+    print(f"Attention Mask shape: {batch['attention_mask'].shape}")
+    print(f"Labels shape: {batch['labels'].shape}")
+    print(f"Labels dtypes: {batch['labels'].dtype}")
+    print(f"Max token ID: {batch['input_ids'].max()}")
     
-    # 4. Assertions
+    # Assertions
     # Check batch size
-    assert batch["input_ids"].shape[0] == 4
-    assert batch["labels"].shape[0] == 4
+    assert batch["input_ids"].shape[0] == 4, "Batch size mismatch in input_ids"
+    assert batch["labels"].shape[0] == 4, "Batch size mismatch in labels"
     
+    # NLP Classification models usually expect Long (Int64) for labels and input_ids
+    assert batch["labels"].dtype == torch.int64, "Labels should be Long tensors for CrossEntropy"
+    assert batch["input_ids"].dtype == torch.int64, "Input IDs should be Long tensors"
+
+    # The collator should ensure all sequences in a single batch have the same length
+    seq_len = batch["input_ids"].shape[1]
+    assert batch["attention_mask"].shape[1] == seq_len, "Attention mask length must match input_ids length"
+
     # Check keys required by your SentimentClassifier forward pass
     assert "input_ids" in batch
     assert "attention_mask" in batch
