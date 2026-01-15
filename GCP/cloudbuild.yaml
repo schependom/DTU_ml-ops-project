@@ -11,6 +11,7 @@
 # to be in the build context.
 #
 # GCP triggers can also be setup to automatically run this build command, e.g. on every git push.
+# As an alternative to GCP triggers, we can use GitHub Actions workflows to control the whole process.
 #
 # Do note that by default all files in your .gitignore file are excluded from the build context, but you
 # can override this by using the --ignore-file flag,

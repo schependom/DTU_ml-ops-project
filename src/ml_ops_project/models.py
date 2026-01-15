@@ -15,6 +15,7 @@ class SentimentClassifier(pl.LightningModule):
 
         # Load the pre-trained model for binary classification (2 labels)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+        self.model.train()
         self.criterion = torch.nn.CrossEntropyLoss()
 
         # Metrics

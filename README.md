@@ -320,11 +320,8 @@ To use Weights & Biases for experiment tracking, you need to set up your environ
 WANDB_API_KEY=your_api_key_here
 WANDB_ENTITY=your_entity_name
 WANDB_PROJECT=your_project_name
+WANDB_ORGANIZATION=your_organization_name
 ```
-
-The training script automatically loads these variables. You can find your API key in your WandB settings.
-
-### Training
 
 To train the model using the default configuration (`configs/config.yaml`), run either of the following commands:
 
@@ -479,7 +476,7 @@ docker run --rm --name train train:latest
 Run training with **custom** parameters:
 
 ```bash
-docker run --rm --name train train:latest conv1.in_channels=1 loss_fn=cross_entropy optimizer=adam optimizer.lr=0.01
+docker run --rm --name train train:latest <parameters>
 ```
 
 Run training with a custom config file (must be included in the image or mounted as a volume):

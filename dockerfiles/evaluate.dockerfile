@@ -55,39 +55,22 @@ RUN --mount=type=cache,target=/root/.cache/uv uv sync
 
 ##
 # Create directories for saving outputs
+# Create 'models' directory as it's expected to verify checkpoints if passed via volumes
 RUN mkdir -p models reports/figures
 
 ##
 # The entry point is the application we want to run
 # when the container starts up
 
-ENTRYPOINT ["uv", "run", "src/ml_ops_project/train.py"]
+ENTRYPOINT ["uv", "run", "src/ml_ops_project/evaluate.py"]
 
 ## Building the Docker image:
 #
-#     docker build -f train.dockerfile . -t train:latest
+#     docker build -f dockerfiles/evaluate.dockerfile . -t evaluate:latest
 #
-#        -f train.dockerfile <-> f stands for "file" and specifies the Dockerfile to use
-#        .                   <-> the build context, i.e. the folder where Docker looks for files
-#        -t train:latest     <-> tags the image with the NAME "train" and the TAG "latest"
+# Running the image:
 #
-# In general, Docker images are built for a SPECIFIC PLATFORM.
+#     # You usually need to mount the directory containing your trained models
+#     # so the container can access them.
+#     docker run --rm -v $(pwd)/models:/models evaluate:latest ckpt_path=/models/best_model.ckpt
 #
-# For example, if you are using a Mac with an M1/M2 chip, then you are running on an ARM architecture.
-# If you are using a Windows or Linux machine, then you are running on an AMD64 architecture.
-# This is important to know when building Docker images.
-# Thus, Docker images you build may not work on platforms different than the ones you build on.
-# You can specify which platform you want to build for by adding the --platform argument to the docker build command:
-#
-#      docker build --platform linux/amd64 -f train.dockerfile . -t train:latest
-#                   --platform linux/arm64
-#
-# And when running the image
-#
-#      docker run --platform linux/amd64 train:latest
-#                 --platform linux/arm64
-#
-# These images can take up a lot of space on your machine.
-# To clean, use `docker system prune`
-# or manually remove them by first `docker images` to list image IDs
-# and then `docker rmi IMAGE_ID` to remove specific images.

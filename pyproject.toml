@@ -38,6 +38,8 @@ dependencies = [
     "dvc-gs>=3.0.2",
     "dvc>=3.66.1",
     "python-dotenv>=1.2.1",
+    "markdown>=3.10",
+    "pydantic>=2.12.5",
 ]
 
 # Optional dependency groups, which can be installed using:

@@ -64,8 +64,8 @@ will check the repositories and the code to verify your answers.
 -   [x] Do a bit of code typing and remember to document essential parts of your code (M7)
 -   [x] Setup version control for your data or part of your data (M8)
 -   [ ] Add command line interfaces and project commands to your code where it makes sense (M9)
--   [ ] Construct one or multiple docker files for your code (M10)
--   [ ] Build the docker files locally and make sure they work as intended (M10)
+-   [x] Construct one or multiple docker files for your code (M10)
+-   [x] Build the docker files locally and make sure they work as intended (M10)
 -   [x] Write one or multiple configurations files for your experiments (M11)
 -   [x] Used Hydra to load the configurations and manage your hyperparameters (M11)
 -   [ ] Use profiling to optimize your code (M12)
@@ -149,7 +149,7 @@ s214631, s204078, s202186, s251739
 >
 > Answer:
 
-We used the Hugging Face ecosystem to build our DistilBERT sentiment model. Specifically, `datasets` was used to fetch the Rotten Tomatoes dataset via `load_dataset("rotten_tomatoes")`, and `transformers` was used to load the pretrained DistilBERT model and tokenizer (`AutoModelForSequenceClassification`/`AutoTokenizer`) and handle dynamic padding (`DataCollatorWithPadding`). These packages, together with PyTorch Lightning gave us a high-quality pretrained NLP baseline and a standardized dataset + tokenization pipeline, so we could focus on the training/evaluation setup rather than implementing model architectures and preprocessing from scratch.
+We leveraged **Transfer Learning** by using the Hugging Face ecosystem to fine-tune a pre-trained DistilBERT model for sentiment classification. Specifically, `transformers` allowed us to load the pre-trained `distilbert-base-uncased` weights (trained on a massive corpus) and adapt them to our specific task using `AutoModelForSequenceClassification`. This approach meant we started with a model that already "understood" language, rather than training from scratch. We used `datasets` to fetch the Rotten Tomatoes dataset and PyTorch Lightning to structure the training loop. These tools combined gave us a high-quality NLP baseline with minimal boilerplate, allowing us to focus on the MLOps pipeline.
 
 ## Coding environment
 
