@@ -326,7 +326,7 @@ The training script automatically loads these variables. You can find your API k
 
 ### Training
 
-To train the model using the default configuration (`configs/config.yaml`), run:
+To train the model using the default configuration (`configs/config.yaml`), run either of the following commands:
 
 ```bash
 uvr invoke train
