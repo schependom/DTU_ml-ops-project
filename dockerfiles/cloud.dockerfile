@@ -1,0 +1,24 @@
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+# Install some essentials
+RUN apt update && \
+    apt install --no-install-recommends -y build-essential gcc && \
+    apt clean && rm -rf /var/lib/apt/lists/*
+
+COPY pyproject.toml pyproject.toml
+COPY uv.lock uv.lock
+COPY src/ src/
+COPY data/ data/
+COPY configs/ configs/
+COPY tests/ tests/
+COPY README.md README.md
+COPY LICENSE LICENSE
+
+WORKDIR /
+
+# Install dependencies
+RUN uv sync --no-cache-dir
+
+RUN mkdir -p models reports/figures
+
+ENTRYPOINT ["uv", "run", "src/ml_ops_project/train.py"]
