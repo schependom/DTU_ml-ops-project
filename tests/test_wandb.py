@@ -1,8 +1,11 @@
 import os
 
 import pytest
+from dotenv import load_dotenv
 
 import wandb
+
+load_dotenv()
 
 
 def test_wandb_service_account_access():
@@ -15,14 +18,14 @@ def test_wandb_service_account_access():
 
     # 1. Load Environment Variables injected by GitHub Actions
     api_key = os.environ.get("WANDB_API_KEY")
-    project = os.environ.get("WANDB_PROJECT_NAME")
+    project = os.environ.get("WANDB_PROJECT")
     entity = os.environ.get("WANDB_ENTITY")
 
     # Fail immediately if secrets were not passed correctly
     if not api_key:
         pytest.fail("CRITICAL: WANDB_API_KEY is missing.")
     if not project:
-        pytest.fail("CRITICAL: WANDB_PROJECT_NAME is missing.")
+        pytest.fail("CRITICAL: WANDB_PROJECT is missing.")
     if not entity:
         pytest.fail("CRITICAL: WANDB_ENTITY is missing.")
 
