@@ -8,7 +8,7 @@ RUN apt update && \
 COPY pyproject.toml pyproject.toml
 COPY uv.lock uv.lock
 COPY src/ src/
-COPY data/ data/
+# COPY data/ data/ # NOT needed in the cloud, since we directly use "gcs/..."
 COPY configs/ configs/
 COPY tests/ tests/
 COPY README.md README.md
