@@ -1,21 +1,54 @@
 import os
-import sys
-from pathlib import Path
 
 import hydra
 import pytorch_lightning as pl
+from dotenv import load_dotenv
+from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
+from pytorch_lightning.loggers import WandbLogger
 
-# Allow running as a script: `uv run src/ml_ops_project/train.py`
-# (src-layout packages otherwise need `python -m ml_ops_project.train`)
-if __package__ is None:
-    src_dir = Path(__file__).resolve().parents[1]  # .../src
-    if (src_dir / "ml_ops_project").exists():
-        sys.path.insert(0, str(src_dir))
-
+import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 from ml_ops_project.models import SentimentClassifier
+
+load_dotenv()
+
+
+def setup_wandb(cfg: DictConfig) -> bool:
+    """Initializes Weights & Biases."""
+    if not cfg.wandb.enabled:
+        logger.info("WandB disabled via config.")
+        return False
+
+    api_key = os.getenv("WANDB_API_KEY")
+    if not api_key:
+        logger.warning("WANDB_API_KEY not found. Skipping WandB.")
+        return False
+
+    try:
+        wandb.login(key=api_key)
+
+        init_kwargs = {
+            "config": OmegaConf.to_container(cfg, resolve=True),
+            "tags": cfg.wandb.tags,
+        }
+
+        # Only set project and entity if not running a sweep (WandB handles this automatically in sweeps)
+        if not os.getenv("WANDB_SWEEP_ID"):
+            entity = os.getenv("WANDB_ENTITY")
+            project = os.getenv("WANDB_PROJECT")
+            if entity:
+                init_kwargs["entity"] = entity
+            if project:
+                init_kwargs["project"] = project
+
+        wandb.init(**init_kwargs)
+        logger.success("Initialized Weights & Biases.")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to initialize WandB: {e}")
+        return False
 
 
 # 1. Add the Hydra Decorator
@@ -24,38 +57,16 @@ def train(cfg: DictConfig):
     # Set seed for reproducibility
     pl.seed_everything(cfg.training.seed)
 
-    # Optional: Weights & Biases logging (enabled via configs/wandb/default.yaml)
-    wandb_logger = None
-    wandb_cfg = getattr(cfg, "wandb", None)
-    if wandb_cfg is not None and bool(getattr(wandb_cfg, "enabled", False)):
-        try:
-            from pytorch_lightning.loggers import WandbLogger
-        except Exception as e:  # pragma: no cover
-            raise RuntimeError(
-                "W&B logging is enabled (wandb.enabled=true) but WandbLogger could not be imported. "
-                "Ensure `wandb` is installed and compatible with your pytorch-lightning version."
-            ) from e
+    using_wandb = setup_wandb(cfg)
+    if using_wandb:
+        # TODO customize WandbLogger params as needed
+        wandb_logger = WandbLogger()
+    else:
+        wandb_logger = None
 
-        mode = getattr(wandb_cfg, "mode", None)
-        if mode:
-            # Respect an explicitly set environment variable (useful on CI/containers)
-            os.environ.setdefault("WANDB_MODE", str(mode))
-
-        wandb_logger = WandbLogger(
-            project=str(getattr(wandb_cfg, "project", "MLOps")),
-            entity=getattr(wandb_cfg, "entity", None),
-            name=str(getattr(cfg, "experiment_name", "train")),
-            tags=list(getattr(wandb_cfg, "tags", []) or []),
-            notes=getattr(wandb_cfg, "notes", None),
-            log_model=bool(getattr(wandb_cfg, "log_model", False)),
-        )
-
-        # Store full Hydra config in W&B (so runs are reproducible from the UI)
-        resolved_cfg = OmegaConf.to_container(cfg, resolve=True)
-        wandb_logger.experiment.config.update(resolved_cfg, allow_val_change=True)
-
+    # Prepare Data Module
     config = DataConfig(
-        data_dir=cfg.data_dir,
+        data_dir=cfg.data_dir,  # points to either local directory or GCS bucket directory ending in /data/
         batch_size=cfg.training.batch_size,
         num_workers=cfg.training.num_workers,
         model_name=cfg.model.name,
@@ -107,13 +118,7 @@ def train(cfg: DictConfig):
     # Close the W&B run *after* all Lightning stages are done (fit + test),
     # otherwise Lightning may still try to log hyperparams/metrics during test.
     if wandb_logger is not None:
-        try:
-            import importlib
-
-            wandb = importlib.import_module("wandb")
-            wandb.finish()
-        except Exception:
-            pass
+        wandb.finish()
 
 
 if __name__ == "__main__":

@@ -1,17 +1,7 @@
 enabled: true
 
-# W&B basics
-# project: "MLOps" # TODO modify to use .ENV
-entity: null  # set to your W&B entity/username, or leave null
-
-# W&B mode: "online" | "offline" | "disabled"
-mode: "online"
-
 # Optional run metadata
 tags: []
 notes: null
 
-# Whether to upload checkpoints/artifacts automatically (Lightning handles this when enabled)
-log_model: false
-
-
+name: experiment_name

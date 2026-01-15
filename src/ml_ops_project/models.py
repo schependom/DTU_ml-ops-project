@@ -7,7 +7,8 @@ from transformers import AutoModelForSequenceClassification
 class SentimentClassifier(pl.LightningModule):
     def __init__(self, model_name: str = "distilbert-base-uncased", learning_rate: float = 2e-5):
         super().__init__()
-        self.save_hyperparameters()  # Logs 'model_name' and 'learning_rate' automatically
+
+        self.save_hyperparameters()
 
         # Load the pre-trained model for binary classification (2 labels)
         self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
