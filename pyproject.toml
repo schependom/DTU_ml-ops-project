@@ -76,8 +76,23 @@ explicit = true
 [tool.ruff]
 line-length = 120
 
+# This part triggers coverage automatically when you run 'pytest'
+[tool.pytest.ini_options]
+addopts = "--cov=src/ml_ops_project --cov-report=term-missing"
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+# This part fine-tunes the coverage engine
 [tool.coverage.run]
-omit = ["tests/*"]
+source = ["src/ml_ops_project"]
+omit = [
+    "tests/*",
+    "**/__init__.py"
+]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
 
 [tool.uv]
 required-environments = [
