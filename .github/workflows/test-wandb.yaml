@@ -1,0 +1,37 @@
+# This GitHub Actions workflow tests if the WandB service account
+# is correctly set up.
+
+name: WandB Service Account Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+
+jobs:
+  authenticate:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+
+    - name: Install dependencies
+      run: uv sync --all-groups
+
+    - name: Test WandB authentication
+      env:
+        WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+        WANDB_PROJECT_NAME: ${{ secrets.WANDB_PROJECT }}
+        WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}
+        WANDB_ORGANIZATION: ${{ secrets.WANDB_ORGANIZATION }}
+      run: |
+        uv run pytest tests/test_wandb.py
