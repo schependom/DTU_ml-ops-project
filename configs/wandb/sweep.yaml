@@ -1,0 +1,25 @@
+# WandB hyperparameter sweep configuration file
+
+program: src/ml_ops_project/train.py
+method: random # random/grid/bayes
+command:
+  - ${env}
+  - python
+  - ${program}
+  - ${args_no_hyphens}
+name: mlops_sweep
+project: MLOps-Project
+entity: MLOpsss
+metric:
+    goal: minimize
+    name: validation_loss
+parameters:
+    optimizer.lr:
+        min: 0.0001
+        max: 0.1
+        distribution: log_uniform_values
+    training.batch_size:
+        values: [16, 64]
+    training.max_epochs:
+        values: [5, 15]
+run_cap: 10
