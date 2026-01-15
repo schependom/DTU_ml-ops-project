@@ -14,7 +14,7 @@ The goal of this project is to build a **reproducible, testable, and deployable 
 
 ### Data
 
-We will use the Kaggle dataset **“Rotten Tomatoes Movies and Critic Reviews Dataset”**  
+We will use the Kaggle dataset **"Rotten Tomatoes Movies and Critic Reviews Dataset"**  
 Source: https://www.kaggle.com/datasets/stefanoleone992/rotten-tomatoes-movies-and-critic-reviews-dataset
 
 The dataset includes thousands of critic reviews covering many movies, along with metadata. From this raw data, we will construct our modeling dataset using the review text and an associated outcome field.
@@ -32,8 +32,8 @@ If the score/rating fields are clean enough, we may also explore a secondary tas
 
 -   Clean and normalize review text (handle duplicates, missing text, odd encodings, very short reviews).
 -   Deterministic **train/val/test** split with a fixed random seed.
--   Create a tiny “**smoke test subset**” (<1% of data) for CI/CD so the full pipeline can run fast on GitHub Actions.
--   Optional: **DVC** to version either the raw Kaggle archive, the processed dataset, or both.
+-   Create a tiny "**smoke test subset**" (<1% of data) for CI/CD so the full pipeline can run fast on GitHub Actions.
+-   **DVC** to version either the raw Kaggle archive, the processed dataset, or both.
 
 ---
 

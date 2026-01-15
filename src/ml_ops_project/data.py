@@ -3,6 +3,7 @@ from dataclasses import dataclass
 
 import pytorch_lightning as pl
 from datasets import load_dataset, load_from_disk
+from loguru import logger
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer, DataCollatorWithPadding
 
@@ -39,6 +40,13 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
 
             # 1. Download
             dataset = load_dataset("rotten_tomatoes")
+            raw_length = len(dataset["train"]) + len(dataset["validation"]) + len(dataset["test"])
+            logger.info(f"Downloaded {raw_length} samples.")
+
+            dataset = dataset.filter(lambda x: x["text"] is not None and len(x["text"]) > 0)
+            cleaned_length = len(dataset["train"]) + len(dataset["validation"]) + len(dataset["test"])
+            logger.info(f"After cleaning, {cleaned_length} samples remain.")
+            logger.info(f"Dropped {raw_length - cleaned_length} samples with missing/empty text.")
 
             # 2. Rename (Preprocessing moved here)
             if "label" in dataset["train"].column_names:

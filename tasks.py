@@ -11,7 +11,7 @@ PYTHON_VERSION = "3.12"
 @task
 def preprocess_data(ctx: Context) -> None:
     """Preprocess data."""
-    # TODO
+    ctx.run(f"uv run src/{PROJECT_NAME}/...
 
 
 @task
