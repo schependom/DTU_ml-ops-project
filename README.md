@@ -14,14 +14,14 @@ The goal of this project is to build a **reproducible, testable, and deployable 
 
 ### Data
 
-We will use the Kaggle dataset **"Rotten Tomatoes Movies and Critic Reviews Dataset"**  
+We will use the Kaggle dataset **"Rotten Tomatoes Movies and Critic Reviews Dataset"**
 Source: https://www.kaggle.com/datasets/stefanoleone992/rotten-tomatoes-movies-and-critic-reviews-dataset
 
 The dataset includes thousands of critic reviews covering many movies, along with metadata. From this raw data, we will construct our modeling dataset using the review text and an associated outcome field.
 
 **Prediction target**
 
--   **Primary task: Binary sentiment classification**  
+-   **Primary task: Binary sentiment classification**
     Map the dataset's fresh/rotten-style field (or equivalent) to:
     -   `0 = negative`
     -   `1 = positive`
@@ -41,7 +41,7 @@ If the score/rating fields are clean enough, we may also explore a secondary tas
 
 #### Baseline (for grounding performance)
 
--   **TF-IDF + Logistic Regression**  
+-   **TF-IDF + Logistic Regression**
     Simple, fast, and ensures the deep model actually adds value.
 
 #### Primary model (deep learning)
