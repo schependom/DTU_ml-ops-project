@@ -185,3 +185,4 @@ outputs/
 models/*.ckpt
 /wandb
 data/
+/data
