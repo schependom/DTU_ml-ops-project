@@ -1,12 +1,15 @@
+import hydra
 import pytorch_lightning as pl
+from omegaconf import DictConfig
 import torch
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
 
 
 class SentimentClassifier(pl.LightningModule):
-    def __init__(self, model_name: str = "distilbert-base-uncased", learning_rate: float = 2e-5):
+    def __init__(self, model_name: str, optimizer_cfg: DictConfig):
         super().__init__()
+        self.optimizer_cfg = optimizer_cfg
 
         self.save_hyperparameters()
 
@@ -56,4 +59,4 @@ class SentimentClassifier(pl.LightningModule):
         return loss
 
     def configure_optimizers(self):
-        return torch.optim.AdamW(self.parameters(), lr=self.hparams["learning_rate"])
+        return hydra.utils.instantiate(self.optimizer_cfg, params=self.parameters())

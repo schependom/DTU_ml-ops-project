@@ -19,6 +19,8 @@ class DataConfig:
     batch_size: int = 64
     num_workers: int = 0
     model_name: str = "distilbert-base-uncased"
+    persistent_workers: bool = True
+    pin_memory: bool = False
 
 
 class RottenTomatoesDataModule(pl.LightningDataModule):
@@ -90,7 +92,8 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             shuffle=True,
             collate_fn=self.data_collator,
             num_workers=self.config.num_workers,
-            pin_memory=True,
+            pin_memory=self.config.pin_memory,
+            persistent_workers=self.config.persistent_workers,
         )
 
     def val_dataloader(self):
@@ -99,7 +102,8 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             collate_fn=self.data_collator,
             num_workers=self.config.num_workers,
-            pin_memory=True,
+            pin_memory=self.config.pin_memory,
+            persistent_workers=self.config.persistent_workers,
         )
 
     def test_dataloader(self):
@@ -108,7 +112,8 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             batch_size=self.batch_size,
             collate_fn=self.data_collator,
             num_workers=self.config.num_workers,
-            pin_memory=True,
+            pin_memory=self.config.pin_memory,
+            persistent_workers=self.config.persistent_workers,
         )
 
 

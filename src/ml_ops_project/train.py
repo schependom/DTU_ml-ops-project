@@ -66,17 +66,19 @@ def train(cfg: DictConfig):
 
     # Prepare Data Module
     config = DataConfig(
-        data_dir=cfg.data_dir,  # points to either local directory or GCS bucket directory ending in /data/
+        data_dir=cfg.data_dir,
         batch_size=cfg.training.batch_size,
         num_workers=cfg.training.num_workers,
         model_name=cfg.model.name,
+        persistent_workers=cfg.training.persistent_workers,
+        pin_memory=cfg.training.pin_memory,
     )
 
     # Initialize Data Module
     data_module = RottenTomatoesDataModule(config)
 
     # Initialize Model
-    model = SentimentClassifier(model_name=cfg.model.name, learning_rate=cfg.training.learning_rate)
+    model = SentimentClassifier(model_name=cfg.model.name, optimizer_cfg=cfg.optimizer)
 
     # Callbacks are plugins that execute code at certain points in the training loop.
     # ModelCheckpoint automatically saves the best model based on a monitored metric.

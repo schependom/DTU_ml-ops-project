@@ -1,9 +1,0 @@
-# Nesterov SGD optimizer configuration
-
-_target_: torch.optim.SGD
-
-## Example:
-# lr: 0.001
-# momentum: 0.9
-# nesterov: true
-# weight_decay: 0.0
