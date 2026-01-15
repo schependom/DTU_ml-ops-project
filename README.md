@@ -621,3 +621,26 @@ docker system prune
 -   **Use `.dockerignore`**: Exclude unnecessary files from build context for faster builds
 -   **Name your containers**: Makes them easier to reference with `--name`
 -   **Tag images properly**: Use meaningful tags beyond `latest` for versioning
+
+## GCP
+
+To get started with Google Cloud Platform (GCP), follow these steps.
+
+Log in to your GCP account.
+
+```bash
+gcloud auth login
+gcloud auth application-default login
+```
+
+Set the project
+
+```bash
+gcloud config set project dtumlops-484016
+```
+
+I have created the following bucket:
+
+```bash
+gs://ml_ops_project_g7
+```
