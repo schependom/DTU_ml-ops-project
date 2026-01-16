@@ -16,9 +16,9 @@ import pytorch_lightning as pl
 import torch
 from omegaconf import DictConfig
 from torchmetrics import Accuracy
-from transformers import AutoModelForSequenceClassification
+from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-from ml_ops_project.visualize import log_mismatches_to_wandb
+from ml_ops_project.visualize import log_mismatches_to_wandb, save_mismatches
 
 
 class SentimentClassifier(pl.LightningModule):
@@ -39,7 +39,12 @@ class SentimentClassifier(pl.LightningModule):
         train_acc, val_acc, test_acc: TorchMetrics Accuracy instances per split.
     """
 
-    def __init__(self, model_name: str, inference_mode: bool, optimizer_cfg: DictConfig = None) -> None:
+    def __init__(
+        self,
+        model_name: str,
+        inference_mode: bool = False,
+        optimizer_cfg: DictConfig | None = None,
+    ) -> None:
         super().__init__()
         self.optimizer_cfg = optimizer_cfg
 

@@ -62,20 +62,23 @@ def save_mismatches(
         df.to_csv(f"{folder}/errors.csv", mode="a", header=not os.path.exists(f"{folder}/errors.csv"), index=False)
 
 
-def save_mismatches_to_wandb(batch, preds, tokenizer, table_name="mismatches"):
-    # logs wrong predictions to a WandB table
+def save_mismatches_to_wandb(
+    batch: dict[str, torch.Tensor],
+    preds: torch.Tensor,
+    tokenizer,
+    table_name: str = "mismatches",
+) -> None:
+    """Log misclassified examples to a W&B Table."""
     labels = batch["labels"].detach().cpu()
     preds = preds.detach().cpu()
     input_ids = batch["input_ids"].detach().cpu()
-    
+
     mask = preds != labels
 
     if mask.any():
-        # Initialize/Get the WandB Table
         columns = ["Input Text", "Label", "Predicted"]
         data = []
 
-        # Extract and decode wrong instances
         wrong_input_ids = input_ids[mask]
         wrong_labels = labels[mask]
         wrong_preds = preds[mask]
@@ -84,5 +87,14 @@ def save_mismatches_to_wandb(batch, preds, tokenizer, table_name="mismatches"):
             text = tokenizer.decode(wrong_input_ids[i], skip_special_tokens=True)
             data.append([text, int(wrong_labels[i]), int(wrong_preds[i])])
 
-        # Log the table to the current run
         wandb.log({table_name: wandb.Table(columns=columns, data=data)})
+
+
+def log_mismatches_to_wandb(
+    batch: dict[str, torch.Tensor],
+    preds: torch.Tensor,
+    tokenizer,
+    table_name: str = "mismatches",
+) -> None:
+    """Backward-compatible alias for W&B mismatch logging."""
+    save_mismatches_to_wandb(batch=batch, preds=preds, tokenizer=tokenizer, table_name=table_name)

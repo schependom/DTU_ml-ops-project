@@ -173,8 +173,9 @@ def train(cfg: DictConfig) -> None:
     # --- Testing ---
     # ckpt_path="best" loads the checkpoint with highest val_accuracy from ModelCheckpoint
     logger.info("Testing model")
-    if trainer.checkpoint_callback and hasattr(trainer.checkpoint_callback, "best_model_path"):
-        logger.info(f"Best model path: {trainer.checkpoint_callback.best_model_path}")
+    checkpoint_cb = getattr(trainer, "checkpoint_callback", None)
+    if checkpoint_cb is not None and hasattr(checkpoint_cb, "best_model_path"):
+        logger.info(f"Best model path: {checkpoint_cb.best_model_path}")
 
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
     logger.success("Done!")
