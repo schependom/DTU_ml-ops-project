@@ -132,6 +132,9 @@ def train(cfg: DictConfig):
 
     # Test (uses best checkpoint from ModelCheckpoint above)
     logger.info("Testing model")
+    if trainer.checkpoint_callback and hasattr(trainer.checkpoint_callback, "best_model_path"):
+        logger.info(f"Best model path: {trainer.checkpoint_callback.best_model_path}")
+
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
     logger.success("Done!")

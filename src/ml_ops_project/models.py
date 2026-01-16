@@ -4,7 +4,8 @@ import torch
 from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
-from visualize import save_mismatches
+
+from ml_ops_project.visualize import save_mismatches
 
 
 class SentimentClassifier(pl.LightningModule):
