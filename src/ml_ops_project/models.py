@@ -5,6 +5,8 @@ from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
 
+from visualize import save_mismatches
+
 
 class SentimentClassifier(pl.LightningModule):
     def __init__(self, model_name: str, optimizer_cfg: DictConfig):
