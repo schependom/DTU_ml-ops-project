@@ -50,7 +50,7 @@ steps:
     'custom-jobs',
     'create',
     '--region',
-    'europe-west4-a',
+    'europe-west4',
     '--display-name',
     'train-movie-sentiment',
     '--config',
