@@ -29,8 +29,9 @@ class SentimentClassifier(pl.LightningModule):
 
     Args:
         model_name: HuggingFace model identifier (e.g., "distilbert-base-uncased").
+        inference_mode: Whether to load in inference mode (from checkpoint) or training mode.
         optimizer_cfg: Hydra/OmegaConf config for optimizer instantiation.
-            Must contain `_target_` key pointing to optimizer class.
+            Must contain `_target_` key pointing to optimizer class. Required in training mode.
 
     Attributes:
         model: The underlying HuggingFace transformer model.
@@ -38,17 +39,26 @@ class SentimentClassifier(pl.LightningModule):
         train_acc, val_acc, test_acc: TorchMetrics Accuracy instances per split.
     """
 
-    def __init__(self, model_name: str, optimizer_cfg: DictConfig) -> None:
+    def __init__(self, model_name: str, inference_mode: bool, optimizer_cfg: DictConfig = None) -> None:
         super().__init__()
         self.optimizer_cfg = optimizer_cfg
 
         # Save hyperparameters to checkpoint for reproducibility and easy loading
         self.save_hyperparameters()
 
-        # Load pre-trained transformer with a classification head for 2 classes
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
-        self.model.train()
-        self.criterion = torch.nn.CrossEntropyLoss()
+        if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
+            if not optimizer_cfg:
+                raise AttributeError("A 'NoneType' cannot be passed as optimizer config, when in training mode.")
+
+            self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+            self.model.train()
+            self.criterion = torch.nn.CrossEntropyLoss()
+
+        else:
+            # Fetch the saved model.
+            path = "../models/epoch-epoch=01-val_accuracy=0.842.ckpt"
+            self.model = AutoModelForSequenceClassification.from_pretrained(path, num_labels=2)
+            self.model.eval()
 
         # Separate metric instances per split to avoid state leakage between train/val/test
         self.train_acc = Accuracy(task="multiclass", num_classes=2)
