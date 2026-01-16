@@ -34,7 +34,7 @@ jobs:
           install_gcloud: "false"
 
       - name: Pull DVC data from GCP bucket
-        run: dvc pull
+        run: uv run dvc pull
 
       - name: Run tests & coverage
         run: |

@@ -248,13 +248,13 @@ cd DTU_ML-Operations
 Authenticate DVC using SSH (make sure you have access to the remote):
 
 ```bash
-dvc remote modify --local myremote auth ssh
+uv run dvc remote modify --local myremote auth ssh
 ```
 
 Pull data from DVC remote:
 
 ```bash
-dvc pull
+uv run dvc pull
 ```
 
 You can use `invoke` to run common tasks. To list available tasks, run:
