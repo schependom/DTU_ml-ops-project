@@ -4,7 +4,6 @@ import torch
 from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
-
 from visualize import save_mismatches
 
 
@@ -46,7 +45,7 @@ class SentimentClassifier(pl.LightningModule):
 
         # --- Save mismatches ---
         # Only doing this for the first few batches to avoid huge CSVs
-        if batch_idx < 10: 
+        if batch_idx < 10:
             save_mismatches(batch, preds, folder="mismatches_val")
         # ---------------------------------------
 
