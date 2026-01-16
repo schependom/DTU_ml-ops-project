@@ -43,8 +43,8 @@ def test_wandb_service_account_access():
     try:
         # fetch the project details with a timeout to prevent hanging
         project_obj = api.project(entity, project)
-        # Note: wandb.Api() doesn't support a global timeout easily, 
-        # but rapid failures are better than hangs. 
+        # Note: wandb.Api() doesn't support a global timeout easily,
+        # but rapid failures are better than hangs.
         # Accessing properties triggers the network call.
         _ = project_obj.name
 
