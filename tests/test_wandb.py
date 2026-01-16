@@ -16,29 +16,27 @@ def test_wandb_service_account_access():
     3. Has explicit access to the target Project and Entity.
     """
 
-    # 1. Load Environment Variables injected by GitHub Actions
+    # Load the required secrets from environment variables (.env locally or GitHub Actions secrets).
     api_key = os.environ.get("WANDB_API_KEY")
     project = os.environ.get("WANDB_PROJECT")
     entity = os.environ.get("WANDB_ENTITY")
 
-    # Fail immediately if secrets were not passed correctly
+    # Fail fast with clear messages if any required secret is missing.
     if not api_key:
         pytest.fail("CRITICAL: WANDB_API_KEY is missing.")
     if not project:
         pytest.fail("CRITICAL: WANDB_PROJECT is missing.")
     if not entity:
         pytest.fail("CRITICAL: WANDB_ENTITY is missing.")
+    assert project is not None and entity is not None
 
-    # 2. Initialize the API Client (This does NOT start a run)
-    # We pass the key explicitly to avoid relying on local config files
+    # Initialize the API client using the explicit key (no local WandB config required).
     try:
         api = wandb.Api(api_key=api_key)
     except Exception as e:
         pytest.fail(f"Failed to initialize WandB API client: {e}")
 
-    # 3. Verify Project Access
-    # We attempt to retrieve the specific project object.
-    # If the user lacks permissions or the project doesn't exist, this raises an error.
+    # Verify the service account can read the target project (permissions + existence).
     target_path = f"{entity}/{project}"
 
     try:

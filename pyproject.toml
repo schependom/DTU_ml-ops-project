@@ -40,7 +40,6 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "markdown>=3.10",
     "pydantic>=2.12.5",
-    "pytest-cov>=7.0.0",
 ]
 
 # Optional dependency groups, which can be installed using:
@@ -58,6 +57,7 @@ dev = [
     "ruff==0.14.11",
     "mkdocstrings[python]>=0.28.0",
     "hydra-core>=1.3.2",
+    "pytest-cov>=7.0.0",
 ]
 
 
@@ -82,6 +82,10 @@ line-length = 120
 addopts = "--cov=src/ml_ops_project --cov-report=term-missing"
 testpaths = ["tests"]
 pythonpath = ["src"]
+filterwarnings = [
+    "ignore:The `Scope.user` setter is deprecated.*:DeprecationWarning:wandb\\.analytics\\.sentry",
+    "ignore:Read the `app_url` setting.*:DeprecationWarning:wandb\\.apis\\.public\\.api",
+]
 
 # This part fine-tunes the coverage engine
 [tool.coverage.run]
