@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import pytest
 import torch
 from hydra import compose, initialize_config_dir
@@ -32,15 +30,14 @@ def test_model_forward_pass(model_and_cfg, batch_size, seq_length):
     model, _ = model_and_cfg
     model.eval()
 
-    batch = _make_batch(batch_size, seq_length)
+    # 3. Create mock data
+    input_ids = torch.randint(0, 30522, (batch_size, seq_length))
+    attention_mask = torch.ones((batch_size, seq_length), dtype=torch.int64)
+    labels = torch.randint(0, 2, (batch_size,))
 
-    # Run forward pass
+    # 4. Run forward pass
     with torch.no_grad():
-        output = model(
-            input_ids=batch["input_ids"],
-            attention_mask=batch["attention_mask"],
-            labels=batch["labels"],
-        )
+        output = model(input_ids=input_ids, attention_mask=attention_mask, labels=labels)
 
     # 5. Assertions
     assert output.logits.shape == (batch_size, 2), "Output logits shape mismatch"

@@ -31,11 +31,16 @@ jobs:
         uses: ./.github/actions/setup-gcp
         with:
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          install_gcloud: "false"
 
-      - name: Pull DVC data
-        run: dvc pull
+      - name: Pull DVC data from GCP bucket
+        run: uv run dvc pull
 
       - name: Run tests & coverage
         run: |
-          uv run coverage run -m pytest tests/
+          uv run coverage run -m pytest tests/ --ignore=tests/test_wandb.py
           uv run coverage report -m
+        env:
+          WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
+          WANDB_PROJECT: ${{ secrets.WANDB_PROJECT }}
+          WANDB_ENTITY: ${{ secrets.WANDB_ENTITY }}

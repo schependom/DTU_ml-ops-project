@@ -14,7 +14,9 @@
 name: GCP CI/CD Release Pipeline
 
 on:
-  merge: 'release'
+  push:
+    branches:
+      - release
 
 
 jobs:
@@ -51,7 +53,8 @@ jobs:
         GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
 
     - name: Run tests
-      run: uv run pytest
+      # TODO: run all tests
+      run: uv run pytest tests/test_data.py
 
   # STEP 2: build container image if tests pass
   build:

@@ -9,6 +9,10 @@ inputs:
   GCLOUD_SERVICE_KEY:
     description: 'GCP Service Account Key'
     required: true
+  install_gcloud:
+    description: 'Whether to install the Google Cloud SDK (gcloud CLI)'
+    required: false
+    default: "true"
 
 runs:
     using: "composite"
@@ -21,4 +25,5 @@ runs:
         credentials_json: ${{ inputs.GCLOUD_SERVICE_KEY }}
 
     - name: Set up Cloud SDK
+      if: ${{ inputs.install_gcloud == 'true' }}
       uses: google-github-actions/setup-gcloud@v2

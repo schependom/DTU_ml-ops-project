@@ -63,7 +63,7 @@ will check the repositories and the code to verify your answers.
 -   [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 -   [x] Do a bit of code typing and remember to document essential parts of your code (M7)
 -   [x] Setup version control for your data or part of your data (M8)
--   [ ] Add command line interfaces and project commands to your code where it makes sense (M9)
+-   [x] Add command line interfaces and project commands to your code where it makes sense (M9)
 -   [x] Construct one or multiple docker files for your code (M10)
 -   [x] Build the docker files locally and make sure they work as intended (M10)
 -   [x] Write one or multiple configurations files for your experiments (M11)
@@ -76,9 +76,9 @@ will check the repositories and the code to verify your answers.
 
 ### Week 2
 
--   [ ] Write unit tests related to the data part of your code (M16)
--   [ ] Write unit tests related to model construction and or model training (M16)
--   [ ] Calculate the code coverage (M16)
+-   [x] Write unit tests related to the data part of your code (M16)
+-   [x] Write unit tests related to model construction and or model training (M16)
+-   [x] Calculate the code coverage (M16)
 -   [x] Get some continuous integration running on the GitHub repository (M17)
 -   [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
 -   [x] Add a linting step to your continuous integration (M17)
@@ -167,7 +167,9 @@ We leveraged **Transfer Learning** by using the Hugging Face ecosystem to fine-t
 >
 > Answer:
 
-We managed dependencies using `uv`, with `pyproject.toml` as the source of declared dependencies and a committed lock file (`uv.lock`) to make installs reproducible across machines. When we needed to add or update a package, we used `uv add <package>`, which updates `pyproject.toml` and refreshes the lock file with resolved, pinned versions. For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving). After that, project commands are run through `uv` (e.g., `uv run ...`) to ensure execution happens inside the locked environment.
+We managed dependencies using `uv`, with `pyproject.toml` as the source of declared dependencies and a committed lock file (`uv.lock`) to make installs reproducible across machines. When we needed to add or update a package, we used `uv add <package>`, which updates `pyproject.toml` and refreshes the lock file with resolved, pinned versions. We made sure to keep track of our normal dependencies and development dependencies, by adding a dependency group called 'dev'. To add packages to this group, we used `uv add <package> --group dev`.
+
+For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync --dev`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving), including everything in the development dependency group. After that, project commands are run through `uv` (e.g., `uv run ...`) to ensure execution happens inside the locked environment. When simply executing the code, it's sufficient to just `uv sync`.
 
 ### Question 5
 
@@ -211,7 +213,7 @@ We initialized the repository from the `DTU_ml-ops-template` cookiecutter and ke
 >
 > Answer:
 
---- question 7 fill here ---
+In total we have implemented 7 tests (so far!!). We primarily test the RottenTomatoesDataModule to ensure that all dataset splits (train, validation, test) load correctly and that the DataCollator produces tensors with the proper types and matching sequence lengths. We also check the SentimentClassifier’s forward pass using multiple batch sizes and an overfit test to confirm correctness. Lastly, we validate that labels are strictly binary and check WandB connectivity.
 
 ### Question 8
 
