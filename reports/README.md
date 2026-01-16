@@ -63,7 +63,7 @@ will check the repositories and the code to verify your answers.
 -   [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
 -   [x] Do a bit of code typing and remember to document essential parts of your code (M7)
 -   [x] Setup version control for your data or part of your data (M8)
--   [ ] Add command line interfaces and project commands to your code where it makes sense (M9)
+-   [x] Add command line interfaces and project commands to your code where it makes sense (M9)
 -   [x] Construct one or multiple docker files for your code (M10)
 -   [x] Build the docker files locally and make sure they work as intended (M10)
 -   [x] Write one or multiple configurations files for your experiments (M11)
@@ -76,9 +76,9 @@ will check the repositories and the code to verify your answers.
 
 ### Week 2
 
--   [ ] Write unit tests related to the data part of your code (M16)
--   [ ] Write unit tests related to model construction and or model training (M16)
--   [ ] Calculate the code coverage (M16)
+-   [x] Write unit tests related to the data part of your code (M16)
+-   [x] Write unit tests related to model construction and or model training (M16)
+-   [x] Calculate the code coverage (M16)
 -   [x] Get some continuous integration running on the GitHub repository (M17)
 -   [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
 -   [x] Add a linting step to your continuous integration (M17)
@@ -167,7 +167,9 @@ We leveraged **Transfer Learning** by using the Hugging Face ecosystem to fine-t
 >
 > Answer:
 
-We managed dependencies using `uv`, with `pyproject.toml` as the source of declared dependencies and a committed lock file (`uv.lock`) to make installs reproducible across machines. When we needed to add or update a package, we used `uv add <package>`, which updates `pyproject.toml` and refreshes the lock file with resolved, pinned versions. For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving). After that, project commands are run through `uv` (e.g., `uv run ...`) to ensure execution happens inside the locked environment.
+We managed dependencies using `uv`, with `pyproject.toml` as the source of declared dependencies and a committed lock file (`uv.lock`) to make installs reproducible across machines. When we needed to add or update a package, we used `uv add <package>`, which updates `pyproject.toml` and refreshes the lock file with resolved, pinned versions. We made sure to keep track of our normal dependencies and development dependencies, by adding a dependency group called 'dev'. To add packages to this group, we used `uv add <package> --group dev`.
+
+For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync --dev`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving), including everything in the development dependency group. After that, project commands are run through `uv` (e.g., `uv run ...`) to ensure execution happens inside the locked environment. When simply executing the code, it's sufficient to just `uv sync`.
 
 ### Question 5
 
@@ -264,6 +266,17 @@ In total we have implemented 7 tests (so far!!). We primarily test the RottenTom
 > Answer:
 
 --- question 11 fill here ---
+We use GitHub Actions for continuous integration to automatically validate every push. The workflow primarily focuses on unit testing with `pytest` and code coverage, ensuring that core functionality stays stable as the codebase evolves.
+
+Our unit tests cover the main components of the ML pipeline:
+- **Data pipeline tests**: verify the Rotten Tomatoes datamodule produces the expected splits (`train/validation/test`), and that each dataloader yields batches with correct keys, shapes, and dtypes (e.g., `input_ids`, `attention_mask`, `labels`).
+- **Model tests**: smoke-test the model forward pass on synthetic batches (different batch sizes/sequence lengths) and verify that training/validation/test steps return a scalar loss and that optimizer configuration returns a valid PyTorch optimizer.
+- **Evaluation logic tests**: validate checkpoint selection logic (use explicit checkpoint path, pick the newest checkpoint in a directory, and raise informative errors when checkpoints are missing).
+- **Training orchestration tests**: mock Lightning/WandB to test that `train()` wires together data, model, trainer, and calls `fit()` and `test()`; we also test `setup_wandb()` behavior (disabled, missing key, sweep vs non-sweep).
+
+We additionally keep a small WandB access check for the service account locally, but it is excluded from CI because it relies on secrets and external network access.
+
+The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, and Windows (six environments), which helps catch OS-specific issues (e.g., filesystem timestamp resolution). A successful CI run example: [GitHub Actions run 21066565482](https://github.com/schependom/DTU_ml-ops-project/actions/runs/21066565482).
 
 ## Running code and tracking experiments
 
