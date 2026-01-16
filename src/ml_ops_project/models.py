@@ -42,6 +42,12 @@ class SentimentClassifier(pl.LightningModule):
         loss = outputs.loss
         preds = torch.argmax(outputs.logits, dim=1)
 
+        # --- Save mismatches ---
+        # Only doing this for the first few batches to avoid huge CSVs
+        if batch_idx < 10: 
+            save_mismatches(batch, preds, folder="mismatches_val")
+        # ---------------------------------------
+
         # Log validation accuracy and loss
         self.val_acc(preds, batch["labels"])
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
@@ -52,6 +58,10 @@ class SentimentClassifier(pl.LightningModule):
         outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
         preds = torch.argmax(outputs.logits, dim=1)
+
+        # --- Save mismatches for the test set ---
+        save_mismatches(batch, preds, folder="mismatches_test")
+        # -------------------------------------------------------
 
         # Log test accuracy and loss
         self.test_acc(preds, batch["labels"])
