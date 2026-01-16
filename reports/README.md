@@ -213,7 +213,7 @@ We initialized the repository from the `DTU_ml-ops-template` cookiecutter and ke
 >
 > Answer:
 
---- question 7 fill here ---
+In total we have implemented 7 tests (so far!!). We primarily test the RottenTomatoesDataModule to ensure that all dataset splits (train, validation, test) load correctly and that the DataCollator produces tensors with the proper types and matching sequence lengths. We also check the SentimentClassifier’s forward pass using multiple batch sizes and an overfit test to confirm correctness. Lastly, we validate that labels are strictly binary and check WandB connectivity. 
 
 ### Question 8
 
