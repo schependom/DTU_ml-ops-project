@@ -5,15 +5,16 @@ from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
 
-from ml_ops_project.visualize import save_mismatches
+from ml_ops_project.visualize import log_mismatches_to_wandb
 
 
 class SentimentClassifier(pl.LightningModule):
     def __init__(self, model_name: str, inference_mode: bool, optimizer_cfg: DictConfig = None):
         super().__init__()
         self.optimizer_cfg = optimizer_cfg
-
         self.save_hyperparameters()
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+
 
         if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
             if not optimizer_cfg:
@@ -53,12 +54,15 @@ class SentimentClassifier(pl.LightningModule):
         loss = outputs.loss
         preds = torch.argmax(outputs.logits, dim=1)
 
-        # --- Save mismatches ---
-        # Only doing this for the first few batches to avoid huge CSVs
-        if batch_idx < 10:
-            save_mismatches(batch, preds, folder="mismatches_val")
-        # ---------------------------------------
-
+        # Log to WandB Table (only for the first batch of validation)
+        if batch_idx == 0 and self.logger is not None:
+            log_mismatches_to_wandb(
+                batch=batch, 
+                preds=preds, 
+                tokenizer=self.tokenizer, 
+                table_name="val_mismatches"
+            )
+            
         # Log validation accuracy and loss
         self.val_acc(preds, batch["labels"])
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
@@ -69,10 +73,6 @@ class SentimentClassifier(pl.LightningModule):
         outputs = self(input_ids=batch["input_ids"], attention_mask=batch["attention_mask"], labels=batch["labels"])
         loss = outputs.loss
         preds = torch.argmax(outputs.logits, dim=1)
-
-        # --- Save mismatches for the test set ---
-        save_mismatches(batch, preds, folder="mismatches_test")
-        # -------------------------------------------------------
 
         # Log test accuracy and loss
         self.test_acc(preds, batch["labels"])
