@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -68,9 +69,9 @@ def test_evaluate_picks_latest_checkpoint_in_dir(tmp_path, monkeypatch):
     newer = ckpt_dir / "new.ckpt"
     older.write_text("old")
     newer.write_text("new")
-    # Ensure different mtimes
-    older.touch()
-    newer.touch()
+    # Ensure different mtimes across filesystems (Linux can have coarse resolution).
+    os.utime(older, (1, 1))
+    os.utime(newer, (2, 2))
 
     cfg = _base_cfg(tmp_path, ckpt_path=None)
 
