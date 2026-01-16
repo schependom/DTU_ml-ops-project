@@ -1,58 +1,91 @@
-# TODO: complete further
-
-# On push:
-# - run tests
-# - if they pass, continue
-# - build cloud.dockerfile into container image
-# - push container image to Artifact Registry
-# - trigger Vertex AI training job using the new container image
+# On push or merge request to the 'release' branch:
+#
+#   - run tests
+#   - if tests pass, continue
+#   - build GCP/cloud.dockerfile into container image
+#   - push container image to Artifact Registry
+#   - trigger Vertex AI training job using GCP/vertex_ai_train.yaml, which
+#     uses the container image built above
+#   - stop GCP instance
 #
 # This is an alternative to setting up a Trigger in GCP that listens to
 # git pushes and automatically runs the cloudbuild.yaml file.
 
-name: GCP CI/CD Pipeline
+name: GCP CI/CD Release Pipeline
 
 on:
-  # only manual triggers to reduce resource consumption on GCP
-  workflow_dispatch: {}
+  merge: 'release'
 
 
 jobs:
-  # Dummy test job
+
+  # STEP 1: run tests first
   test:
+    #
+    # Because we don't want to waste Google Cloud credits,
+    # we don't use a matrix strategy here, but it would be possible:
+    #
+    # runs-on: ${{ matrix.operating-system }}
+    # strategy:
+    #   matrix:
+    #     operating-system: ["ubuntu-latest", "windows-latest", "macos-latest"]
+    #     python-version: ["3.12", "3.11"]
+    #
+    # Instead, we only run on ubuntu-latest and python 3.12
     runs-on: ubuntu-latest
     steps:
+
     - name: Checkout code
       uses: actions/checkout@v5
 
-    - name: Run tests
-      run: echo "Running tests..."  # Replace with actual test commands
-
-  build:
-    needs: test # only continue if tests pass
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v5
-
-    - name: Auth with GCP
-      uses: ./.github/actions/setup-gcp-dvc
+      # Use our custom action to avoid code duplication
+    - name: Set up Python and dependencies
+      uses: ./.github/actions/setup-python
       with:
-        # This is the JSON file from GCP. It was added to the GitHub secrets as 'GCLOUD_SERVICE_KEY'.
+        python-version: "3.12"
+
+      # Use our other custom action to avoid code duplication
+    - name: Auth with GCP for DVC
+      uses: ./.github/actions/setup-gcp
+      with:
         GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
 
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
+    - name: Run tests
+      run: uv run pytest
 
+  # STEP 2: build container image if tests pass
+  build:
+
+    # Only continue if tests pass
+    needs: test
+
+    # Only run on release branch
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/release' }}
+
+    # Only run on ubuntu-latest, for the same reason as in step 1.
+    # Alternatively, we could use a matrix strategy here.
+    runs-on: ubuntu-latest
+
+    steps:
+    # Same as above: checkout code, auth with gcp
+    - name: Checkout code
+      uses: actions/checkout@v5
+    - name: Auth with GCP
+      uses: ./.github/actions/setup-gcp
+      with:
+        GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+
+    # Build container image
     - name: Submit build
       run: gcloud builds submit . --config GCP/cloudbuild.yaml --substitutions=_IMAGE_NAME="ml-ops-proj-instance"
 
+    # Trigger Vertex AI Training Job
     - name: Trigger Vertex AI Training Job
       run: |
         echo "Triggering Vertex AI Training Job..."
         gcloud builds submit . --config GCP/vertex_ai_train.yaml
 
+    # Stop instance after training job is done
     - name: Stop instance
       run: |
         echo "Stopping GCP instance..."
