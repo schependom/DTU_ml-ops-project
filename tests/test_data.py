@@ -8,7 +8,8 @@ from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 
 
 def _build_test_config() -> DataConfig:
-    # Setup config (use a small batch for testing)
+    # Build a minimal config for data tests using the project Hydra config,
+    # but with a small batch size and no worker processes.
     config_path = str(Path(__file__).resolve().parents[1] / "configs")
     with initialize_config_dir(version_base="1.2", config_dir=config_path):
         cfg = compose(config_name="config")
@@ -22,6 +23,7 @@ def _build_test_config() -> DataConfig:
 
 @pytest.fixture(scope="module")
 def datamodule() -> RottenTomatoesDataModule:
+    # Create and initialize the data module once per module to reduce setup time.
     dm = RottenTomatoesDataModule(_build_test_config())
     # Prepare and Setup (this mimics the Lightning Trainer flow)
     dm.prepare_data()
@@ -30,11 +32,11 @@ def datamodule() -> RottenTomatoesDataModule:
 
 
 def test_datamodule_batch_dimensions(datamodule: RottenTomatoesDataModule):
-    # Get one batch
+    # Verify that a training batch has the expected shapes, dtypes, and keys.
     train_loader = datamodule.train_dataloader()
     batch = next(iter(train_loader))
 
-    # Print Statements for Debugging
+    # Print statements are for local debugging and are not required for assertions.
     print("\n--- Batch Debug Info ---")
     print(f"Keys in batch: {list(batch.keys())}")
     print(f"Input IDs shape: {batch['input_ids'].shape}")
@@ -68,6 +70,7 @@ def test_datamodule_batch_dimensions(datamodule: RottenTomatoesDataModule):
 
 
 def test_datamodule_splits_exist(datamodule: RottenTomatoesDataModule):
+    # Ensure the expected dataset splits exist and are non-empty.
     splits = datamodule.tokenized_datasets
     assert "train" in splits
     assert "validation" in splits
@@ -78,6 +81,7 @@ def test_datamodule_splits_exist(datamodule: RottenTomatoesDataModule):
 
 
 def test_val_and_test_dataloaders_batch_size(datamodule: RottenTomatoesDataModule):
+    # Validate batch sizes in val/test loaders match the configured batch size.
     val_batch = next(iter(datamodule.val_dataloader()))
     test_batch = next(iter(datamodule.test_dataloader()))
     assert val_batch["input_ids"].shape[0] == 4
@@ -85,6 +89,7 @@ def test_val_and_test_dataloaders_batch_size(datamodule: RottenTomatoesDataModul
 
 
 def test_labels_are_binary(datamodule: RottenTomatoesDataModule):
+    # Confirm labels are binary (0/1) for sentiment classification.
     batch = next(iter(datamodule.train_dataloader()))
     unique_labels = torch.unique(batch["labels"]).tolist()
     assert all(label in (0, 1) for label in unique_labels)
