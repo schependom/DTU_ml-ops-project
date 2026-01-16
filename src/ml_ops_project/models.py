@@ -18,7 +18,7 @@ from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
 
-from ml_ops_project.visualize import save_mismatches
+from ml_ops_project.visualize import log_mismatches_to_wandb
 
 
 class SentimentClassifier(pl.LightningModule):
@@ -45,6 +45,8 @@ class SentimentClassifier(pl.LightningModule):
 
         # Save hyperparameters to checkpoint for reproducibility and easy loading
         self.save_hyperparameters()
+        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+
 
         if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
             if not optimizer_cfg:
@@ -125,11 +127,17 @@ class SentimentClassifier(pl.LightningModule):
         loss = outputs.loss
         preds = torch.argmax(outputs.logits, dim=1)  # [batch_size]
 
-        # Save misclassified examples for error analysis (limit to first 10 batches to avoid huge files)
-        if batch_idx < 10:
-            save_mismatches(batch, preds, folder="mismatches_val")
-
         # Update and log metrics (computed at epoch end)
+        # Log to WandB Table (only for the first batch of validation)
+        if batch_idx == 0 and self.logger is not None:
+            log_mismatches_to_wandb(
+                batch=batch, 
+                preds=preds, 
+                tokenizer=self.tokenizer, 
+                table_name="val_mismatches"
+            )
+            
+        # Log validation accuracy and loss
         self.val_acc(preds, batch["labels"])
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
         self.log("val_accuracy", self.val_acc, prog_bar=True, on_epoch=True)
