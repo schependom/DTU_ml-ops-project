@@ -195,7 +195,11 @@ We initialized the repository from the `DTU_ml-ops-template` cookiecutter and ke
 >
 > Answer:
 
---- question 6 fill here ---
+We used `ruff` for both linting, as well as for formatting. We also used `ty` for typing (TODO: documentation??) These concepts are important in larger projects because they help catch errors early and make code more maintainable. For example, typing helps catch errors at compile time, while linting and formatting help keep code consistent and readable.
+
+The corresponding `ruff` and `ty` VS Code extensions really helped to catch these errors early on such that we didn't had to only rely on `pre-commit`.
+
+Talking about `pre-commit`, we used [pre-commit.ci](https://pre-commit.ci/) to automatically run `pre-commit` hooks on every push to GitHub. When fixable errors are detected, `pre-commit.ci` will automatically fix them and commit them to the branch.
 
 ## Version control
 
@@ -213,7 +217,7 @@ We initialized the repository from the `DTU_ml-ops-template` cookiecutter and ke
 >
 > Answer:
 
-In total we have implemented 7 tests (so far!!). We primarily test the RottenTomatoesDataModule to ensure that all dataset splits (train, validation, test) load correctly and that the DataCollator produces tensors with the proper types and matching sequence lengths. We also check the SentimentClassifier’s forward pass using multiple batch sizes and an overfit test to confirm correctness. Lastly, we validate that labels are strictly binary and check WandB connectivity.
+In total we have implemented 7 tests (so far!!). We primarily test the `RottenTomatoesDataModule` to ensure that all dataset splits (train, validation, test) load correctly and that the DataCollator produces tensors with the proper types and matching sequence lengths. We also check the `SentimentClassifier`’s forward pass using multiple batch sizes and an overfit test to confirm correctness. Lastly, we validate that labels are strictly binary and check WandB connectivity.
 
 ### Question 8
 
@@ -252,7 +256,7 @@ In total we have implemented 7 tests (so far!!). We primarily test the RottenTom
 >
 > Answer:
 
---- question 10 fill here ---
+We used created a Google Cloud Platform (GCP) bucket to store our (??). We then used `dvc` to version control these files. TODO: what happens when doing a cloud run? We mount the `gcs/...` directory as a volume!
 
 ### Question 11
 
@@ -265,7 +269,36 @@ In total we have implemented 7 tests (so far!!). We primarily test the RottenTom
 >
 > Answer:
 
---- question 11 fill here ---
+Because we noticed that -- while writing the GitHub Actions workflows -- we had a lot of code duplication, we decided to create `action.yaml` files in `.github/actions/` to abstract away the common parts of our workflows. More specifically, we created actions for the GCP setup (authentication and SDK setup) in `setup-gcp/` and for setting up the Python environment (Python and `uv` installation + dependency installation) in `setup-python/`. This way, we can reuse these actions in multiple workflows.
+
+With regards to the actual workflows themselves (which are stored in `.github/workflows/`), we have the following:
+
+- `gcp.yaml`:
+  - On push or merge request to the 'release' branch:
+    - run tests with `pytest`
+    - if tests pass, continue (`needs: test`)
+    - build `GCP/cloud.dockerfile` into a container image
+    - push the container image to GCP Artifact Registry
+    - trigger a Vertex AI training job using `GCP/vertex_ai_train.yaml` (which uses the container image built above)
+    - stop GCP instance
+  - The reason we only run this workflow on the 'release' branch is to avoid spending a bunch of GCP credits.
+- `linting.yaml`:
+   - Runs `ruff check` and `ruff format`.
+- `pre-commit-update.yaml`:
+   - Updates the pre-commit hooks (since Dependabot does not support this for `uv` yet).
+- `tests.yaml`:
+   - Runs `pytest` with coverage, after it has pulled the necesseary files from the GCP bucket with `uv run dvc pull`.
+We use GitHub Actions for continuous integration to automatically validate every push. The workflow primarily focuses on unit testing with `pytest` and code coverage, ensuring that core functionality stays stable as the codebase evolves.
+
+Our unit tests cover the main components of the ML pipeline:
+- **Data pipeline tests**: verify the Rotten Tomatoes datamodule produces the expected splits (`train/validation/test`), and that each dataloader yields batches with correct keys, shapes, and dtypes (e.g., `input_ids`, `attention_mask`, `labels`).
+- **Model tests**: smoke-test the model forward pass on synthetic batches (different batch sizes/sequence lengths) and verify that training/validation/test steps return a scalar loss and that optimizer configuration returns a valid PyTorch optimizer.
+- **Evaluation logic tests**: validate checkpoint selection logic (use explicit checkpoint path, pick the newest checkpoint in a directory, and raise informative errors when checkpoints are missing).
+- **Training orchestration tests**: mock Lightning/WandB to test that `train()` wires together data, model, trainer, and calls `fit()` and `test()`; we also test `setup_wandb()` behavior (disabled, missing key, sweep vs non-sweep).
+
+We additionally keep a small WandB access check for the service account locally, but it is excluded from CI because it relies on secrets and external network access.
+
+The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, and Windows (six environments), which helps catch OS-specific issues (e.g., filesystem timestamp resolution). A successful CI run example: [GitHub Actions run 21066565482](https://github.com/schependom/DTU_ml-ops-project/actions/runs/21066565482).
 
 ## Running code and tracking experiments
 
@@ -311,6 +344,14 @@ In total we have implemented 7 tests (so far!!). We primarily test the RottenTom
 
 --- question 14 fill here ---
 
+In our training script (`src/ml_ops_project/train.py`) we use a `WandbLogger` to track the key metrics emitted by the Lightning model during training and evaluation (defined in `src/ml_ops_project/models.py`). We log **loss** and **accuracy** for training, validation, and test so we can monitor optimization progress and generalization.
+
+In the screenshot below, training loss decreases while training accuracy increases, which indicates the model is learning the sentiment classification task. The validation curves provide a signal of generalization: validation loss rises and validation accuracy drops toward the end, suggesting that overfitting might be happening. Finally, the single test loss/accuracy points summarize the final performance on held-out data using the best checkpoint selected during training.
+
+![W&B experiment metrics (loss/accuracy curves)](figures/Wandb%20shot.png)
+
+<span style="color: blue;">*Add more about sweeps and stuff*</span>
+
 ### Question 15
 
 > **Docker is an important tool for creating containerized applications. Explain how you used docker in your** > **experiments/project? Include how you would run your docker images and include a link to one of your docker files.**
@@ -352,7 +393,11 @@ In total we have implemented 7 tests (so far!!). We primarily test the RottenTom
 >
 > Answer:
 
---- question 17 fill here ---
+- **Cloud Storage**: Used to store our data and models for DVC.
+- **Cloud Build**: Used to build our docker images.
+- **Artifact Registry**: Used to store our docker images.
+- **Cloud Run**: TODO
+- **Vertex AI**: Used for running cloud training jobs.
 
 ### Question 18
 
