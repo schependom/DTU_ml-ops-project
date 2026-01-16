@@ -40,6 +40,7 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "markdown>=3.10",
     "pydantic>=2.12.5",
+    "pytest-cov>=7.0.0",
 ]
 
 # Optional dependency groups, which can be installed using:
