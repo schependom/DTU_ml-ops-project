@@ -1,7 +1,7 @@
 import hydra
 import pytorch_lightning as pl
-from omegaconf import DictConfig
 import torch
+from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
 
