@@ -14,7 +14,7 @@
 name: GCP CI/CD Release Pipeline
 
 on:
-  merge:
+  push:
     branches:
       - release
 
