@@ -4,20 +4,30 @@ import torch
 from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification
+
 from ml_ops_project.visualize import save_mismatches
 
 
 class SentimentClassifier(pl.LightningModule):
-    def __init__(self, model_name: str, optimizer_cfg: DictConfig):
+    def __init__(self, model_name: str, inference_mode: bool, optimizer_cfg: DictConfig = None):
         super().__init__()
         self.optimizer_cfg = optimizer_cfg
 
         self.save_hyperparameters()
 
-        # Load the pre-trained model for binary classification (2 labels)
-        self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
-        self.model.train()
-        self.criterion = torch.nn.CrossEntropyLoss()
+        if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
+            if not optimizer_cfg:
+                raise AttributeError("A 'NoneType' cannot be passed as optimizer config, when in training mode.")
+
+            self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+            self.model.train()
+            self.criterion = torch.nn.CrossEntropyLoss()
+
+        else:
+            # Fetch the saved model.
+            path = "../models/epoch-epoch=01-val_accuracy=0.842.ckpt"
+            self.model = AutoModelForSequenceClassification.from_pretrained(path, num_labels=2)
+            self.model.eval()
 
         # Metrics
         self.train_acc = Accuracy(task="multiclass", num_classes=2)
