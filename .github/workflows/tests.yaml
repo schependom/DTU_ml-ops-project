@@ -31,8 +31,9 @@ jobs:
         uses: ./.github/actions/setup-gcp
         with:
           GCLOUD_SERVICE_KEY: ${{ secrets.GCLOUD_SERVICE_KEY }}
+          install_gcloud: "false"
 
-      - name: Pull DVC data
+      - name: Pull DVC data from GCP bucket
         run: dvc pull
 
       - name: Run tests & coverage
