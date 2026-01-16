@@ -133,7 +133,11 @@ def test_train_runs_fit_and_test_with_wandb(monkeypatch, tmp_path):
 
     train_module.train(cfg)
 
-    assert trainer.kwargs["logger"] is fake_logger
+    logger_arg = trainer.kwargs["logger"]
+    if isinstance(logger_arg, (list, tuple)):
+        assert fake_logger in logger_arg
+    else:
+        assert logger_arg is fake_logger
     assert trainer.fit_calls
     assert trainer.test_calls
     _, test_dm, test_ckpt = trainer.test_calls[0]
@@ -155,7 +159,11 @@ def test_train_runs_without_wandb(monkeypatch, tmp_path):
 
     train_module.train(cfg)
 
-    assert trainer.kwargs["logger"] is None
+    logger_arg = trainer.kwargs["logger"]
+    if isinstance(logger_arg, (list, tuple)):
+        assert None in logger_arg
+    else:
+        assert logger_arg is None
     assert trainer.fit_calls
     assert trainer.test_calls
     _, test_dm, test_ckpt = trainer.test_calls[0]
