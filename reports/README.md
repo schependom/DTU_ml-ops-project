@@ -217,7 +217,7 @@ Talking about `pre-commit`, we used [pre-commit.ci](https://pre-commit.ci/) to a
 >
 > Answer:
 
-In total we have implemented 7 tests (so far!!). We primarily test the `RottenTomatoesDataModule` to ensure that all dataset splits (train, validation, test) load correctly and that the DataCollator produces tensors with the proper types and matching sequence lengths. We also check the `SentimentClassifier`’s forward pass using multiple batch sizes and an overfit test to confirm correctness. Lastly, we validate that labels are strictly binary and check WandB connectivity.
+In total we have implemented 19 unit tests (20 test cases including parametrization). The tests cover our full pipeline: the `RottenTomatoesDataModule` (dataset splits exist, dataloader batch shapes/dtypes, padding consistency, and binary labels), the `SentimentClassifier` (forward-pass logits/loss, train/val/test steps, and optimizer construction), training orchestration (that `train()` calls `fit()`/`test()` and handles WandB enabled/disabled and sweep vs non-sweep setup), and evaluation logic (selecting an explicit checkpoint vs the newest checkpoint in a directory and raising clear errors when missing).
 
 ### Question 8
 
@@ -230,7 +230,7 @@ In total we have implemented 7 tests (so far!!). We primarily test the `RottenTo
 >
 > Answer:
 
---- question 8 fill here ---
+Our total code coverage is **70.78%**. This gives reasonable confidence that core paths in our data module, model, and the training/evaluation entry points execute as expected, and that key failure modes (e.g., missing checkpoints, WandB disabled/misconfigured) are handled. However, even with 100% (or near-100%) line coverage, we would not trust the system to be error free. Coverage only shows that lines were executed, not that they were exercised with the right assertions, realistic inputs, or critical edge cases. It also does not guarantee correct behavior across different environments (GPU/CPU, OS differences), external dependencies (WandB/network), or realistic data conditions (distribution shifts, unexpected text lengths, corrupted caches). For ML systems, correctness additionally depends on data quality and non-determinism. We therefore treat coverage as one signal, complemented by stronger assertions, integration tests, and manual review.
 
 ### Question 9
 
