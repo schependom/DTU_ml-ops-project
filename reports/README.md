@@ -282,11 +282,11 @@ With regards to the actual workflows themselves (which are stored in `.github/wo
     - trigger a Vertex AI training job using `GCP/vertex_ai_train.yaml` (which uses the container image built above)
     - stop GCP instance
   - The reason we only run this workflow on the 'release' branch is to avoid spending a bunch of GCP credits.
-- `linting.yaml`: 
+- `linting.yaml`:
    - Runs `ruff check` and `ruff format`.
-- `pre-commit-update.yaml`: 
+- `pre-commit-update.yaml`:
    - Updates the pre-commit hooks (since Dependabot does not support this for `uv` yet).
-- `tests.yaml`: 
+- `tests.yaml`:
    - Runs `pytest` with coverage, after it has pulled the necesseary files from the GCP bucket with `uv run dvc pull`.
 We use GitHub Actions for continuous integration to automatically validate every push. The workflow primarily focuses on unit testing with `pytest` and code coverage, ensuring that core functionality stays stable as the codebase evolves.
 
