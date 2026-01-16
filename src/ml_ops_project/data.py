@@ -1,5 +1,6 @@
 import os
 from dataclasses import dataclass
+from typing import Any
 
 import hydra
 import pytorch_lightning as pl
@@ -22,11 +23,23 @@ class DataConfig:
     persistent_workers: bool = True
     pin_memory: bool = False
 
+    def __str__(self):  # string representation for better logging.
+        header = "Data Loader Configuration"
+        lines = [header, "-" * len(header) * 2]
+
+        for key, value in self.__dict__.items():
+            lines.append(f"{key:20}: {value}")
+
+        lines.append("-" * len(header) * 2)
+
+        return "\n".join(lines)
+
 
 class RottenTomatoesDataModule(pl.LightningDataModule):
-    def __init__(self, config: DataConfig):
+    def __init__(self, config: DataConfig, logger: Any = None):
         super().__init__()
         self.config = config
+        self.logger = logger
         self.batch_size = config.batch_size
         self.tokenizer = AutoTokenizer.from_pretrained(config.model_name)
 
@@ -38,6 +51,9 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
         3. Renames columns (label -> labels).
         4. Saves the cleaned data to data_dir (GCP Bucket).
         """
+        # Use the passed logger if available, otherwise fallback to the global logger
+        log = self.logger or logger
+
         # If data/ contains something else apart from .gitkeep
         if force_download or not (os.path.exists(self.config.data_dir) and len(os.listdir(self.config.data_dir)) > 1):
             print(f"Downloading and processing data to {self.config.data_dir}...")
@@ -45,12 +61,12 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
             # Download
             dataset = load_dataset("rotten_tomatoes")
             raw_length = len(dataset["train"]) + len(dataset["validation"]) + len(dataset["test"])
-            logger.info(f"Downloaded {raw_length} samples.")
+            log.info(f"Downloaded {raw_length} samples.")
 
             dataset = dataset.filter(lambda x: x["text"] is not None and len(x["text"]) > 0)
             cleaned_length = len(dataset["train"]) + len(dataset["validation"]) + len(dataset["test"])
-            logger.info(f"After cleaning, {cleaned_length} samples remain.")
-            logger.info(f"Dropped {raw_length - cleaned_length} samples with missing/empty text.")
+            log.info(f"After cleaning, {cleaned_length} samples remain.")
+            log.info(f"Dropped {raw_length - cleaned_length} samples with missing/empty text.")
 
             # Rename
             if "label" in dataset["train"].column_names:
@@ -58,9 +74,11 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
 
             # Save to disk/GCP
             dataset.save_to_disk(self.config.data_dir)
-            print("Data saved successfully.")
+            log.success("Data saved successfully.")
         else:
-            print(f"Data found at {self.config.data_dir}, skipping download. Use force_download=True to re-download.")
+            log.info(
+                f"Data found at {self.config.data_dir}, skipping download. Use force_download=True to re-download."
+            )
 
     def setup(self, stage=None):
         """
@@ -68,7 +86,9 @@ class RottenTomatoesDataModule(pl.LightningDataModule):
         1. Loads the pre-processed data from disk.
         2. Tokenizes the text.
         """
+        log = self.logger or logger
         # Load the already renamed data from the bucket
+        log.info(f"Loading data from path: {self.config.data_dir}")
         dataset = load_from_disk(self.config.data_dir)
 
         # Tokenize

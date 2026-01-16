@@ -619,6 +619,8 @@ docker system prune
 
 ## GCP
 
+### Authentication
+
 To get started with Google Cloud Platform (GCP), follow these steps.
 
 Log in to your GCP account.
@@ -638,4 +640,36 @@ I have created the following bucket:
 
 ```bash
 gs://ml_ops_project_g7
+```
+
+### Build and push Docker image to Artifact Registry
+
+To build and push Docker image to Artifact Registry using the cloudbuild.yaml file:
+
+```bash
+gcloud builds submit . --config=GCP/cloudbuild.yaml
+```
+
+TODO: add `WANDB_API_KEY_PROJ` to the GCP secrets
+
+### Using Vertex AI
+
+First, add your secrets (e.g. `WANDB_API_KEY_PROJ`) to Secret Manager in GCP.
+Make sure the cloudbuild service account has access to your secrets.
+
+```bash
+gcloud secrets add-iam-policy-binding WANDB_API_KEY_PROJ \
+  --project=dtumlops-484016 \
+  --member="serviceAccount:1041875805298@cloudbuild.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+
+gcloud projects add-iam-policy-binding dtumlops-484016 \
+    --member="serviceAccount:1041875805298-compute@developer.gserviceaccount.com" \
+    --role="roles/secretmanager.secretAccessor"
+```
+
+Now, you can use the `cloudbuild/vertex_ai_train.yaml` to run training on Vertex AI:
+
+```bash
+gcloud builds submit . --config=GCP/vertex_ai_train.yaml
 ```

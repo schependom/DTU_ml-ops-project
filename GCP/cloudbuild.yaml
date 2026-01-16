@@ -23,7 +23,7 @@ steps:
     'build',
     '.',
     '-t',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/my-container-repository/$_IMAGE_NAME',
+    'europe-west1-docker.pkg.dev/$PROJECT_ID/ml-ops-project-artifact-reg/$_IMAGE_NAME',
     '-f',
     'dockerfiles/cloud.dockerfile'
   ]
@@ -31,7 +31,7 @@ steps:
   id: 'Push container image (store in Artifact Registry)'
   args: [
     'push',
-    'europe-west1-docker.pkg.dev/$PROJECT_ID/my-container-repository/$_IMAGE_NAME'
+    'europe-west1-docker.pkg.dev/$PROJECT_ID/ml-ops-project-artifact-reg/$_IMAGE_NAME'
   ]
 options:
   logging: CLOUD_LOGGING_ONLY
