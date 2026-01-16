@@ -5,6 +5,13 @@ workerPoolSpecs:
         acceleratorCount: 1
     replicaCount: 1
     containerSpec:
-        imageUri: europe-west1-docker.pkg.dev/dtumlops-484016/my-container-repository/ml-ops-proj-instance:latest
+        imageUri: europe-west1-docker.pkg.dev/dtumlops-484016/ml-ops-project-artifact-reg/ml-ops-proj-instance:latest
+        env:
+          - name: WANDB_API_KEY
+            value: $WANDB_API_KEY_PROJ
+          - name: WANDB_PROJECT
+            value: $WANDB_PROJECT_PROJ
+          - name: WANDB_ENTITY
+            value: $WANDB_ENTITY_PROJ
         # This image was automatically built and pushed to Artifact Registry
-        # using the cloudbuild.yaml file in the GCP folder.
+        # using the cloudbuild.yaml file in the GCP/ folder.
