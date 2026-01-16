@@ -1,31 +1,37 @@
 from pathlib import Path
 
+import pytest
 import torch
 from hydra import compose, initialize_config_dir
 
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 
 
-def test_datamodule_batch_dimensions():
+def _build_test_config() -> DataConfig:
     # Setup config (use a small batch for testing)
     config_path = str(Path(__file__).resolve().parents[1] / "configs")
     with initialize_config_dir(version_base="1.2", config_dir=config_path):
         cfg = compose(config_name="config")
-        config = DataConfig(
+        return DataConfig(
             batch_size=4,
             num_workers=0,
             data_dir=cfg.data_dir,
             persistent_workers=False,
         )
 
-    dm = RottenTomatoesDataModule(config)
 
+@pytest.fixture(scope="module")
+def datamodule() -> RottenTomatoesDataModule:
+    dm = RottenTomatoesDataModule(_build_test_config())
     # Prepare and Setup (this mimics the Lightning Trainer flow)
     dm.prepare_data()
     dm.setup(stage="fit")
+    return dm
 
+
+def test_datamodule_batch_dimensions(datamodule: RottenTomatoesDataModule):
     # Get one batch
-    train_loader = dm.train_dataloader()
+    train_loader = datamodule.train_dataloader()
     batch = next(iter(train_loader))
 
     # Print Statements for Debugging
@@ -59,3 +65,26 @@ def test_datamodule_batch_dimensions():
     # Note: seq_len is dynamic due to DataCollatorWithPadding
     assert batch["input_ids"].ndim == 2
     assert batch["attention_mask"].shape == batch["input_ids"].shape
+
+
+def test_datamodule_splits_exist(datamodule: RottenTomatoesDataModule):
+    splits = datamodule.tokenized_datasets
+    assert "train" in splits
+    assert "validation" in splits
+    assert "test" in splits
+    assert len(splits["train"]) > 0
+    assert len(splits["validation"]) > 0
+    assert len(splits["test"]) > 0
+
+
+def test_val_and_test_dataloaders_batch_size(datamodule: RottenTomatoesDataModule):
+    val_batch = next(iter(datamodule.val_dataloader()))
+    test_batch = next(iter(datamodule.test_dataloader()))
+    assert val_batch["input_ids"].shape[0] == 4
+    assert test_batch["input_ids"].shape[0] == 4
+
+
+def test_labels_are_binary(datamodule: RottenTomatoesDataModule):
+    batch = next(iter(datamodule.train_dataloader()))
+    unique_labels = torch.unique(batch["labels"]).tolist()
+    assert all(label in (0, 1) for label in unique_labels)
