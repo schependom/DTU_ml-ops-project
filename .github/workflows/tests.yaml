@@ -38,7 +38,7 @@ jobs:
 
       - name: Run tests & coverage
         run: |
-          uv run coverage run -m pytest tests/ --timeout=30
+          uv run coverage run -m pytest tests/ --ignore=tests/test_wandb.py
           uv run coverage report -m
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}

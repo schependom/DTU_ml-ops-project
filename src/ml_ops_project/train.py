@@ -11,6 +11,7 @@ from pytorch_lightning.loggers import WandbLogger
 
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 from ml_ops_project.models import SentimentClassifier
+from ml_ops_project.pl_logging import LoguruLightningLogger
 
 load_dotenv()
 logger.add("logs/train.log", rotation="500 MB")
@@ -63,7 +64,11 @@ def train(cfg: DictConfig):
     if using_wandb:
         # TODO customize WandbLogger params as needed
         # log_model="all" to log all checkpoints saved by ModelCheckpoint
-        wandb_logger = WandbLogger(log_model="all", checkpoint_name="model")
+        wandb_logger = WandbLogger(
+            project="MLOps-Project",
+            name="experiment_run_name",
+            log_model="all",  # This tells WandB to upload whatever checkpoints are saved
+        )
     else:
         wandb_logger = None
 
@@ -106,12 +111,14 @@ def train(cfg: DictConfig):
         ),
     ]
 
+    loguru_adapter = LoguruLightningLogger(logger)
+
     # Initialize Trainer
     trainer = pl.Trainer(
         max_epochs=cfg.training.max_epochs,
         accelerator="auto",
         devices=1,
-        logger=wandb_logger,
+        logger=[loguru_adapter, wandb_logger],
         default_root_dir="hydra_logs",  # Clean logs
         callbacks=callbacks,  # Attach our checkpoint callback
         log_every_n_steps=10,  # Log metrics every 10 batches
