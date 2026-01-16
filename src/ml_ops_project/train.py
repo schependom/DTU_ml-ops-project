@@ -138,7 +138,7 @@ def train(cfg: DictConfig) -> None:
         # ModelCheckpoint: saves model weights when monitored metric improves
         ModelCheckpoint(
             dirpath=cfg.training.checkpoint_dir,
-            filename="epoch-{epoch:02d}-{val_accuracy:.3f}",
+            filename="{epoch:02d}-{val_accuracy:.3f}",
             monitor="val_accuracy",
             mode="max",  # higher accuracy is better
             save_top_k=1,  # keep only the single best checkpoint
@@ -175,7 +175,20 @@ def train(cfg: DictConfig) -> None:
     logger.info("Testing model")
     checkpoint_cb = getattr(trainer, "checkpoint_callback", None)
     if checkpoint_cb is not None and hasattr(checkpoint_cb, "best_model_path"):
-        logger.info(f"Best model path: {checkpoint_cb.best_model_path}")
+        best_path = checkpoint_cb.best_model_path
+        logger.info(f"Best model path: {best_path}")
+
+        # DEBUG: Verify file existence to diagnose Vertex AI failure
+        if os.path.exists(best_path):
+            logger.info(f"Checkpoint file exists at {best_path}")
+        else:
+            logger.error(f"Checkpoint file MISSING at {best_path}")
+            # List contents of the parent directory
+            parent_dir = os.path.dirname(best_path)
+            if os.path.exists(parent_dir):
+                logger.info(f"Contents of {parent_dir}: {os.listdir(parent_dir)}")
+            else:
+                logger.error(f"Parent directory {parent_dir} does not exist!")
 
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
     logger.success("Done!")
