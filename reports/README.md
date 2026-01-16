@@ -322,6 +322,14 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 
 --- question 14 fill here ---
 
+In our training script (`src/ml_ops_project/train.py`) we use a `WandbLogger` to track the key metrics emitted by the Lightning model during training and evaluation (defined in `src/ml_ops_project/models.py`). We log **loss** and **accuracy** for training, validation, and test so we can monitor optimization progress and generalization.
+
+In the screenshot, training loss decreases while training accuracy increases, which indicates the model is learning the sentiment classification task. The validation curves provide a signal of generalization: validation loss rises and validation accuracy drops toward the end, suggesting that overfitting might be happening. Finally, the single test loss/accuracy points summarize the final performance on held-out data using the best checkpoint selected during training.
+
+![W&B experiment metrics (loss/accuracy curves)](figures/Wandb%20shot.png)
+
+*Add more about sweeps and stuff*
+
 ### Question 15
 
 > **Docker is an important tool for creating containerized applications. Explain how you used docker in your** > **experiments/project? Include how you would run your docker images and include a link to one of your docker files.**
