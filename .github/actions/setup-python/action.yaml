@@ -1,0 +1,32 @@
+# This action sets up Python and uv, and installs all dependencies.
+# It can be called from any workflow file to avoid code duplication.
+
+name: 'Set up Python and dependencies'
+description: 'Set up Python environment. Download Python & uv. Afterwards, sync all uv dependencies.'
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: true
+
+runs:
+    using: "composite"
+    steps:
+
+    # Set up Python
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    # Install uv
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+        cache-dependency-glob: "uv.lock"
+
+    # Install dependencies
+    - name: Install dependencies
+      run: uv sync --all-groups
+      shell: bash

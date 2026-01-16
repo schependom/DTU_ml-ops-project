@@ -1,9 +1,8 @@
 import os
 
 import pytest
-from dotenv import load_dotenv
-
 import wandb
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -42,8 +41,12 @@ def test_wandb_service_account_access():
     target_path = f"{entity}/{project}"
 
     try:
-        # fetch the project details
+        # fetch the project details with a timeout to prevent hanging
         project_obj = api.project(entity, project)
+        # Note: wandb.Api() doesn't support a global timeout easily,
+        # but rapid failures are better than hangs.
+        # Accessing properties triggers the network call.
+        _ = project_obj.name
 
         # If we reach here, we have successful Read Access
         print(f"\nSUCCESS: Connected to project '{project_obj.name}' at '{project_obj.url}'")
