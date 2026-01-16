@@ -47,7 +47,6 @@ class SentimentClassifier(pl.LightningModule):
         self.save_hyperparameters()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-
         if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
             if not optimizer_cfg:
                 raise AttributeError("A 'NoneType' cannot be passed as optimizer config, when in training mode.")
@@ -130,13 +129,8 @@ class SentimentClassifier(pl.LightningModule):
         # Update and log metrics (computed at epoch end)
         # Log to WandB Table (only for the first batch of validation)
         if batch_idx == 0 and self.logger is not None:
-            log_mismatches_to_wandb(
-                batch=batch, 
-                preds=preds, 
-                tokenizer=self.tokenizer, 
-                table_name="val_mismatches"
-            )
-            
+            log_mismatches_to_wandb(batch=batch, preds=preds, tokenizer=self.tokenizer, table_name="val_mismatches")
+
         # Log validation accuracy and loss
         self.val_acc(preds, batch["labels"])
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)
