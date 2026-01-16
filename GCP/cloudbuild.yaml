@@ -17,6 +17,8 @@
 # can override this by using the --ignore-file flag,
 
 steps:
+
+# Build cloud.dockerfile -> container image
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Build container image'
   args: [
@@ -27,6 +29,8 @@ steps:
     '-f',
     'dockerfiles/cloud.dockerfile'
   ]
+
+# Push container image to Artifact Registry
 - name: 'gcr.io/cloud-builders/docker'
   id: 'Push container image (store in Artifact Registry)'
   args: [
