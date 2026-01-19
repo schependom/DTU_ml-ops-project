@@ -80,9 +80,18 @@ def serve_docs(ctx: Context) -> None:
 #      as being done below:
 #
 @task
-def dvc(ctx, folder="data", message="Add new data"):
+def new_dvc(ctx, folder="data", message="Add new data"):
     ctx.run(f"dvc add {folder}")
     ctx.run(f"git add {folder}.dvc .gitignore")
     ctx.run(f"git commit -m '{message}'")
+    ctx.run("git push")
+    ctx.run("dvc push")
+
+
+@task
+def dvc(ctx):
+    """Push data changes to remote DVC storage."""
+    ctx.run("git add .")
+    ctx.run('git commit -m "Data update"')
     ctx.run("git push")
     ctx.run("dvc push")
