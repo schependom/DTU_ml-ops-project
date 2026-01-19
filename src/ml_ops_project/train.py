@@ -152,6 +152,7 @@ def train(cfg: DictConfig) -> None:
             monitor="val_accuracy",
             mode="max",  # higher accuracy is better
             save_top_k=1,  # keep only the single best checkpoint
+            save_weights_only=True,  # Only save model weights (no optimizer state)
         ),
         # EarlyStopping: halts training if metric doesn't improve for `patience` epochs
         EarlyStopping(

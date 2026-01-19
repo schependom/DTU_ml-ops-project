@@ -1,16 +1,23 @@
-FROM ghcr.io/astral-sh/uv:python3.12-alpine AS base
+FROM python:3.12-slim
 
-COPY uv.lock uv.lock
-COPY pyproject.toml pyproject.toml
-COPY README.md README.md
-COPY LICENSE LICENSE
-COPY configs/ configs/
-COPY tests/ tests/
+WORKDIR /app
 
-RUN uv sync --frozen --no-install-project
+# Install dependencies directly to minimize complexity
+RUN pip install fastapi uvicorn python-dotenv torch transformers wandb google-cloud-storage pytorch-lightning hydra-core torchmetrics pydantic pandas --no-cache-dir
 
-COPY src src/
+# Copy source code and configs
+COPY src/ /app/src/
+COPY configs/ /app/configs/
+# Copy pyproject.toml just in case (though we use pip)
+COPY pyproject.toml /app/
 
-RUN uv sync --frozen
+# Set PYTHONPATH so that 'ml_ops_project' can be imported
+ENV PYTHONPATH=/app/src
 
-ENTRYPOINT ["uv", "run", "uvicorn", "src.ml_ops_project.api:app", "--host", "0.0.0.0", "--port", "8000"]
+# Default port for Cloud Run
+ENV PORT=8080
+
+EXPOSE $PORT
+
+# Use exec form to handle signals correctly
+CMD ["sh", "-c", "uvicorn ml_ops_project.api:app --port $PORT --host 0.0.0.0 --workers 1"]
