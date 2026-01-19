@@ -12,6 +12,7 @@ Usage:
 import argparse
 import os
 import shutil
+
 import wandb
 
 
@@ -38,13 +39,13 @@ def promote_best_model(
         target_entity: Entity where the Model Registry lives (default: same as source entity).
     """
     api = wandb.Api()
-    
+
     # Construct project path
     if entity:
         path = f"{entity}/{project}"
     else:
         path = project
-        
+
     print(f"Scanning runs in project: {path}...")
     try:
         runs = api.runs(path)
@@ -59,7 +60,7 @@ def promote_best_model(
     for run in runs:
         if run.state == "finished" and metric in run.summary:
             valid_runs.append(run)
-            
+
     if not valid_runs:
         print(f"No finished runs found with metric '{metric}'.")
         return
@@ -69,22 +70,22 @@ def promote_best_model(
     # Sort runs based on metric
     # Note: run.summary[metric] gives the value
     reverse = True if mode == "max" else False
-    
+
     sorted_runs = sorted(
-        valid_runs, 
-        key=lambda r: r.summary.get(metric, float('-inf') if mode == 'max' else float('inf')), 
-        reverse=reverse
+        valid_runs,
+        key=lambda r: r.summary.get(metric, float("-inf") if mode == "max" else float("inf")),
+        reverse=reverse,
     )
-    
+
     best_run = sorted_runs[0]
     best_value = best_run.summary.get(metric)
-    
+
     print(f"Best run: {best_run.name} (ID: {best_run.id})")
     print(f"Metric ({metric}): {best_value}")
 
     # --- Find Model Artifact ---
     artifacts = best_run.logged_artifacts(type="model")
-    
+
     if not artifacts:
         print("No model artifacts found in the best run.")
         return
@@ -98,7 +99,7 @@ def promote_best_model(
     # Use target_entity if provided, else source entity (or run's entity)
     final_target_entity = target_entity or entity or best_run.entity
     target_path = f"{final_target_entity}/{target_registry}/{target_collection}"
-    
+
     # Enforce exclusive alias
     print(f"Ensuring alias '{alias}' is exclusive in {target_path}...")
     try:
@@ -108,7 +109,7 @@ def promote_best_model(
             if alias in version.aliases:
                 print(f"Removing alias '{alias}' from version {version.version}...")
                 version.remove_alias(alias)
-                version.save() # Ensure clean state
+                version.save()  # Ensure clean state
     except Exception as e:
         print(f"Collection access/cleanup note (safe to ignore if new): {e}")
 
@@ -118,13 +119,13 @@ def promote_best_model(
 
     # --- Download to models/ ---
     print("Downloading best model to models/ directory...")
-    
+
     # Download artifact to a temporary directory
     download_dir = model_artifact.download()
-    
+
     # Ensure models directory exists
     os.makedirs("models", exist_ok=True)
-    
+
     # Find the checkpoint file and move/rename it
     found = False
     for filename in os.listdir(download_dir):
@@ -135,7 +136,7 @@ def promote_best_model(
             print(f"Model saved to {dest_path}")
             found = True
             break
-            
+
     if not found:
         print("Warning: No .ckpt file found in artifact!")
 
@@ -149,9 +150,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--mode", type=str, default="max", choices=["max", "min"], help="Optimization mode")
     parser.add_argument("--registry", type=str, default="Model_registry", help="Registry name")
     parser.add_argument("--collection", type=str, default="sentiment_analysis_models", help="Collection name")
-    parser.add_argument("--alias", type=str, default="inference", help="Alias for the promoted model (default: inference)")
-    parser.add_argument("--target-entity", type=str, help="Entity where the Model Registry is located (if different from source)")
-    
+    parser.add_argument(
+        "--alias", type=str, default="inference", help="Alias for the promoted model (default: inference)"
+    )
+    parser.add_argument(
+        "--target-entity", type=str, help="Entity where the Model Registry is located (if different from source)"
+    )
+
     return parser.parse_args()
 
 
