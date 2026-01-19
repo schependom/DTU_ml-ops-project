@@ -484,10 +484,10 @@ Build the api image:
 docker build -f dockerfiles/api.dockerfile -t sentiment_api:latest .
 ```
 
-Run the api container:
+Run the api container and mount the port:
 
 ```bash
-docker run --env-file .env --rm sentiment_api:latest
+docker run --env-file .env -p 8080:8080 --rm sentiment_api:latest
 ```
 
 Note that `.env` should look something like this:
@@ -510,5 +510,5 @@ docker build -f dockerfiles/monitoring.dockerfile -t sentiment_monitoring:latest
 Run the monitoring container:
 
 ```bash
-docker run --env-file .env --rm sentiment_monitoring:latest
+docker run --env-file .env -p 8080:8080 --rm sentiment_monitoring:latest
 ```

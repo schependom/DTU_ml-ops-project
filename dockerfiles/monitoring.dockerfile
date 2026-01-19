@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install dependencies directly to minimize complexity
-RUN pip install fastapi nltk evidently google-cloud-storage --no-cache-dir
+RUN pip install fastapi nltk evidently google-cloud-storage pandas datasets
 
 # Copy source code and configs
 COPY src/ /app/src/

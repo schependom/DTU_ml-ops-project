@@ -5,6 +5,7 @@ from pathlib import Path
 import anyio
 import nltk
 import pandas as pd
+from datasets import load_dataset
 from evidently import Report
 from evidently.presets import DataDriftPreset, DataSummaryPreset, TextEvals
 from fastapi import FastAPI
@@ -18,23 +19,11 @@ nltk.download("omw-1.4")
 BUCKET_NAME = "ml_ops_project_g7"  # Used for saving predictions
 
 
-def to_sentiment(rating):
-    """Convert rating to sentiment class."""
-    rating = int(rating)
-    if rating <= 2:
-        return 0  # Negative
-    if rating == 3:
-        return 1  # Neutral
-    return 2  # Positive
-
-
 def sentiment_to_numeric(sentiment: str) -> int:
     """Convert sentiment class to numeric."""
     if sentiment == "negative":
         return 0
-    if sentiment == "neutral":
-        return 1
-    return 2
+    return 1  # positive
 
 
 def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> None:
@@ -47,10 +36,15 @@ def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> No
 def lifespan(app: FastAPI):
     """Load the data and class names before the application starts."""
     global training_data, class_names
-    training_data = pd.read_csv("reviews.csv")
-    training_data["sentiment"] = training_data.score.apply(to_sentiment)
-    training_data["target"] = training_data["sentiment"]  # evidently expects the target column to be named "target"
-    class_names = ["negative", "neutral", "positive"]
+    # Load Rotten Tomatoes dataset (train split) as reference data
+    dataset = load_dataset("rotten_tomatoes", split="train")
+    training_data = dataset.to_pandas()
+    
+    # Rename columns to match Evidently expectations and our internal naming
+    # Rotten Tomatoes has 'text' and 'label'
+    training_data = training_data.rename(columns={"text": "content", "label": "target"})
+    
+    class_names = ["negative", "positive"]
 
     yield
 
