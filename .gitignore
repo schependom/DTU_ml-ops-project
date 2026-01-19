@@ -187,3 +187,4 @@ models/*.ckpt
 data/
 /data
 logs/
+/models
