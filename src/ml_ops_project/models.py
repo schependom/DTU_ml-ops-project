@@ -14,7 +14,7 @@ The model:
 import hydra
 import pytorch_lightning as pl
 import torch
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -46,21 +46,14 @@ class SentimentClassifier(pl.LightningModule):
         optimizer_cfg: DictConfig | None = None,
     ) -> None:
         super().__init__()
-
-        if optimizer_cfg:
-            # Convert OmegaConf object to primitive dict/list to avoid Pickling errors with weights_only=True
-            # IMPORTANT: modifying the local variable 'optimizer_cfg' so save_hyperparameters captures the primitive dict
-            optimizer_cfg = OmegaConf.to_container(optimizer_cfg, resolve=True)
-            self.optimizer_cfg = optimizer_cfg
-        else:
-            self.optimizer_cfg = None
+        self.optimizer_cfg = optimizer_cfg
 
         # Save hyperparameters to checkpoint for reproducibility and easy loading
         self.save_hyperparameters()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
         if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
-            if not self.optimizer_cfg:
+            if not optimizer_cfg:
                 raise AttributeError("A 'NoneType' cannot be passed as optimizer config, when in training mode.")
 
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
