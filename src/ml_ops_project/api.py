@@ -6,13 +6,13 @@ from contextlib import asynccontextmanager
 import torch
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
+from google.cloud import storage
 from pydantic import BaseModel
 
 import wandb
 from ml_ops_project.models import SentimentClassifier
 
 load_dotenv()
-# Define model and device configuration
 BUCKET_NAME = "ml_ops_project_g7"  # Used for saving predictions
 MODEL_FILE_NAME = "models/best_model.ckpt"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -40,16 +40,12 @@ async def lifespan(app: FastAPI):
         download_model_from_wandb()
 
     # Load from PTL checkpoint
-    # We assume usage of the model definition from ml_ops_project.models
-    # which is a LightningModule.
     print(f"Loading model from {MODEL_FILE_NAME}...")
     model = SentimentClassifier.load_from_checkpoint(MODEL_FILE_NAME, map_location=device, weights_only=False)
     model.to(device)
     model.eval()
 
-    # Tokenizer is handled inside the SentimentClassifier (self.tokenizer)
-
-    # Based on training logic (Rotten Tomatoes), we have 2 classes
+    # Rotten Tomatoes has two classes: negative and positive
     class_names = ["negative", "positive"]
     print("Model and tokenizer loaded successfully")
 
@@ -67,19 +63,10 @@ def download_model_from_wandb():
     print("Downloading model from W&B...")
     api = wandb.Api()
 
-    # --- CONFIGURATION START ---
-    # The organization name where the registry lives
     entity = os.getenv("WANDB_ORGANIZATION")
-
-    # The name of the registry (which acts as a W&B Project)
     project = "wandb-registry-model_registry"
-
-    # The specific collection name you requested
     collection = "sentiment_classifier_models"
-
-    # The version alias
     alias = "inference"
-    # --- CONFIGURATION END ---
 
     # Construct the full path: entity/project/collection:alias
     artifact_path = f"{entity}/{project}/{collection}:{alias}"
@@ -107,19 +94,11 @@ def download_model_from_wandb():
 
     except Exception as e:
         print(f"Failed to download model from W&B: {e}")
-        if "not found" in str(e):
-            #
-            print(
-                f"HINT: Check permissions for 'MLOpsServiceAccount' in 'turtle_team-org'. "
-                f"Ensure the artifact '{artifact_path}' exists."
-            )
-        raise
 
 
-# Save prediction results to GCP (keeping this as requested implicitly, only changing download)
+# Save prediction results to GCP
 def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str):
     """Save the prediction results to GCP bucket."""
-    from google.cloud import storage  # Import here since we removed top-level import
 
     client = storage.Client()
     bucket = client.bucket(BUCKET_NAME)

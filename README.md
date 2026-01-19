@@ -498,3 +498,17 @@ WANDB_PROJECT=MLOps-Project
 WANDB_ENTITY=MLOpsss
 WANDB_ORGANIZATION=turtle_team-org
 ```
+
+### Monitoring container
+
+Build the monitoring image:
+
+```bash
+docker build -f dockerfiles/monitoring.dockerfile -t sentiment_monitoring:latest .
+```
+
+Run the monitoring container:
+
+```bash
+docker run --env-file .env --rm sentiment_monitoring:latest
+```
