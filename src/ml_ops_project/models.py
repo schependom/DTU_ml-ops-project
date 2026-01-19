@@ -14,7 +14,7 @@ The model:
 import hydra
 import pytorch_lightning as pl
 import torch
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -46,15 +46,21 @@ class SentimentClassifier(pl.LightningModule):
         optimizer_cfg: DictConfig | None = None,
     ) -> None:
         super().__init__()
-        self.optimizer_cfg = optimizer_cfg
+
+        if optimizer_cfg:
+            # Convert OmegaConf object to primitive dict/list to avoid Pickling errors with weights_only=True
+            # IMPORTANT: modifying the local variable 'optimizer_cfg' so save_hyperparameters captures the primitive dict
+            optimizer_cfg = OmegaConf.to_container(optimizer_cfg, resolve=True)
+            self.optimizer_cfg = optimizer_cfg
+        else:
+            self.optimizer_cfg = None
 
         # Save hyperparameters to checkpoint for reproducibility and easy loading
         self.save_hyperparameters()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-
         if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
-            if not optimizer_cfg:
+            if not self.optimizer_cfg:
                 raise AttributeError("A 'NoneType' cannot be passed as optimizer config, when in training mode.")
 
             self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
@@ -135,13 +141,8 @@ class SentimentClassifier(pl.LightningModule):
         # Update and log metrics (computed at epoch end)
         # Log to WandB Table (only for the first batch of validation)
         if batch_idx == 0 and self.logger is not None:
-            log_mismatches_to_wandb(
-                batch=batch, 
-                preds=preds, 
-                tokenizer=self.tokenizer, 
-                table_name="val_mismatches"
-            )
-            
+            log_mismatches_to_wandb(batch=batch, preds=preds, tokenizer=self.tokenizer, table_name="val_mismatches")
+
         # Log validation accuracy and loss
         self.val_acc(preds, batch["labels"])
         self.log("val_loss", loss, prog_bar=True, on_epoch=True)

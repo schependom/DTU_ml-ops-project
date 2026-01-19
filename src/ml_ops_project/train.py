@@ -14,6 +14,7 @@ Usage:
 import os
 
 import hydra
+import torch
 import pytorch_lightning as pl
 from dotenv import load_dotenv
 from loguru import logger
@@ -100,6 +101,15 @@ def train(cfg: DictConfig) -> None:
     """
     # Seed all RNGs (Python, NumPy, PyTorch) for reproducible experiments
     pl.seed_everything(cfg.training.seed)
+
+    # Log the device being used
+    if torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
+    logger.info(f"Training on device: {device}")
 
     # --- W&B Logger Setup ---
     using_wandb = setup_wandb(cfg)
@@ -191,7 +201,6 @@ def train(cfg: DictConfig) -> None:
                 logger.error(f"Parent directory {parent_dir} does not exist!")
 
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
-    logger.success("Done!")
 
     # Finalize W&B run after all logging is complete (fit + test)
     if wandb_logger is not None:

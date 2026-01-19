@@ -97,6 +97,32 @@ def link_best_model(
     model_artifact.link(target_path)
     print("Successfully linked!")
 
+    # --- Download to models/ ---
+    print("Downloading best model to models/ directory...")
+    import os
+    import shutil
+    
+    # Download artifact to a temporary directory
+    download_dir = model_artifact.download()
+    
+    # Ensure models directory exists
+    os.makedirs("models", exist_ok=True)
+    
+    # Find the checkpoint file and move/rename it
+    found = False
+    for filename in os.listdir(download_dir):
+        if filename.endswith(".ckpt"):
+            src_path = os.path.join(download_dir, filename)
+            dest_path = os.path.join("models", "best_model.ckpt")
+            shutil.copy(src_path, dest_path)
+            print(f"Model saved to {dest_path}")
+            found = True
+            break
+            
+    if not found:
+        print("Warning: No .ckpt file found in artifact!")
+
+
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments for the link_best_model script.

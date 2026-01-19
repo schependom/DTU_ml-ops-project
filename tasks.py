@@ -95,3 +95,13 @@ def dvc(ctx):
     ctx.run('git commit -m "Data update"')
     ctx.run("git push")
     ctx.run("dvc push")
+
+
+@task
+def start_api(ctx: Context) -> None:
+    """Start FastAPI server."""
+    ctx.run(
+        "uv run uvicorn ml_ops_project.api:app --reload",
+        echo=True,
+        pty=not WINDOWS,
+    )

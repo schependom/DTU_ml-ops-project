@@ -4,16 +4,17 @@ import os
 from contextlib import asynccontextmanager
 
 import torch
-import torch.nn as nn
+from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
-from google.cloud import storage
 from pydantic import BaseModel
-from transformers import BertModel, BertTokenizer
 
+import wandb
+from ml_ops_project.models import SentimentClassifier
+
+load_dotenv()
 # Define model and device configuration
-BUCKET_NAME = "gcp_monitoring_exercise"
-MODEL_NAME = "bert-base-cased"
-MODEL_FILE_NAME = "bert_sentiment_model.pt"
+BUCKET_NAME = "ml_ops_project_g7"  # Used for saving predictions
+MODEL_FILE_NAME = "models/best_model.ckpt"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -29,57 +30,97 @@ class PredictionOutput(BaseModel):
     sentiment: str
 
 
-class SentimentClassifier(nn.Module):
-    """Sentiment Classifier class. Combines BERT model with a dropout and linear layer."""
-
-    def __init__(self, n_classes, model_name=MODEL_NAME):
-        super().__init__()
-        self.bert = BertModel.from_pretrained(model_name)
-        self.drop = nn.Dropout(p=0.3)
-        self.out = nn.Linear(self.bert.config.hidden_size, n_classes)
-
-    def forward(self, input_ids, attention_mask):
-        """Forward pass of the model."""
-        output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
-        output = self.drop(output[1])
-        return self.out(output)
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Load the model and tokenizer when the app starts and clean up when the app stops."""
-    global model, tokenizer, class_names
-    if "bert_sentiment_model.pt" not in os.listdir():
-        download_model_from_gcp()  # Download the model from GCP
-    model = SentimentClassifier(n_classes=3)
-    model.load_state_dict(torch.load("bert_sentiment_model.pt", map_location=device))
-    model = model.to(device)
+    global model, class_names
+
+    # Check if model exists, if not download
+    if not os.path.exists(MODEL_FILE_NAME):
+        download_model_from_wandb()
+
+    # Load from PTL checkpoint
+    # We assume usage of the model definition from ml_ops_project.models
+    # which is a LightningModule.
+    print(f"Loading model from {MODEL_FILE_NAME}...")
+    model = SentimentClassifier.load_from_checkpoint(MODEL_FILE_NAME, map_location=device, weights_only=False)
+    model.to(device)
     model.eval()
-    tokenizer = BertTokenizer.from_pretrained(MODEL_NAME)
-    class_names = ["negative", "neutral", "positive"]
+
+    # Tokenizer is handled inside the SentimentClassifier (self.tokenizer)
+
+    # Based on training logic (Rotten Tomatoes), we have 2 classes
+    class_names = ["negative", "positive"]
     print("Model and tokenizer loaded successfully")
 
     yield
 
-    del model, tokenizer
+    del model
 
 
 # Initialize FastAPI app
 app = FastAPI(lifespan=lifespan)
 
 
-def download_model_from_gcp():
-    """Download the model from GCP bucket."""
-    client = storage.Client()
-    bucket = client.bucket(BUCKET_NAME)
-    blob = bucket.blob(MODEL_FILE_NAME)
-    blob.download_to_filename(MODEL_FILE_NAME)
-    print(f"Model {MODEL_FILE_NAME} downloaded from GCP bucket {BUCKET_NAME}.")
+def download_model_from_wandb():
+    """Download the best model from W&B Model Registry."""
+    print("Downloading model from W&B...")
+    api = wandb.Api()
+
+    # --- CONFIGURATION START ---
+    # The organization name where the registry lives
+    entity = os.getenv("WANDB_ORGANIZATION")
+
+    # The name of the registry (which acts as a W&B Project)
+    project = "wandb-registry-model_registry"
+
+    # The specific collection name you requested
+    collection = "sentiment_classifier_models"
+
+    # The version alias
+    alias = "inference"
+    # --- CONFIGURATION END ---
+
+    # Construct the full path: entity/project/collection:alias
+    artifact_path = f"{entity}/{project}/{collection}:{alias}"
+
+    print(f"Attempting to fetch artifact from: {artifact_path}")
+
+    try:
+        artifact = api.artifact(artifact_path, type="model")
+        artifact_dir = artifact.download()
+
+        # Ensure models directory exists
+        os.makedirs("models", exist_ok=True)
+
+        # Find the checkpoint file in the downloaded artifacts
+        for file in os.listdir(artifact_dir):
+            if file.endswith(".ckpt"):
+                source = os.path.join(artifact_dir, file)
+                import shutil
+
+                shutil.move(source, MODEL_FILE_NAME)
+                print(f"Model downloaded to {MODEL_FILE_NAME}")
+                return
+
+        raise RuntimeError("No .ckpt file found in W&B artifact")
+
+    except Exception as e:
+        print(f"Failed to download model from W&B: {e}")
+        if "not found" in str(e):
+            #
+            print(
+                f"HINT: Check permissions for 'MLOpsServiceAccount' in 'turtle_team-org'. "
+                f"Ensure the artifact '{artifact_path}' exists."
+            )
+        raise
 
 
-# Save prediction results to GCP
+# Save prediction results to GCP (keeping this as requested implicitly, only changing download)
 def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str):
     """Save the prediction results to GCP bucket."""
+    from google.cloud import storage  # Import here since we removed top-level import
+
     client = storage.Client()
     bucket = client.bucket(BUCKET_NAME)
     time = datetime.datetime.now(tz=datetime.UTC)
@@ -90,7 +131,7 @@ def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str):
         "probability": outputs,
         "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
     }
-    blob = bucket.blob(f"prediction_{time}.json")
+    blob = bucket.blob(f"predictions/prediction_{time}.json")
     blob.upload_from_string(json.dumps(data))
     print("Prediction saved to GCP bucket.")
 
@@ -100,13 +141,14 @@ def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str):
 async def predict_sentiment(review_input: ReviewInput, background_tasks: BackgroundTasks):
     """Predict sentiment of the input text."""
     try:
-        # Encode input text
-        encoding = tokenizer.encode_plus(
+        # Tokenize using the model's tokenizer
+        encoding = model.tokenizer(
             review_input.review,
             add_special_tokens=True,
             max_length=160,
             return_token_type_ids=False,
             padding="max_length",
+            truncation=True,  # Added truncation for safety
             return_attention_mask=True,
             return_tensors="pt",
         )
@@ -116,11 +158,15 @@ async def predict_sentiment(review_input: ReviewInput, background_tasks: Backgro
 
         # Model prediction
         with torch.no_grad():
-            outputs: torch.Tensor = model(input_ids, attention_mask)
-            _, prediction = torch.max(outputs, dim=1)
+            # PTL model forward returns a SequenceClassifierOutput
+            # We access .logits from it
+            outputs = model(input_ids, attention_mask)
+            logits = outputs.logits
+            probs = torch.softmax(logits, dim=1)
+            _, prediction = torch.max(logits, dim=1)
             sentiment = class_names[prediction]
 
-        background_tasks.add_task(save_prediction_to_gcp, review_input.review, outputs.softmax(-1).tolist(), sentiment)
+        background_tasks.add_task(save_prediction_to_gcp, review_input.review, probs.tolist()[0], sentiment)
 
         return PredictionOutput(sentiment=sentiment)
 
