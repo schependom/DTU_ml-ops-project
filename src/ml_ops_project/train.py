@@ -169,7 +169,8 @@ def train(cfg: DictConfig) -> None:
     trainer = pl.Trainer(
         max_epochs=cfg.training.max_epochs,
         accelerator="auto",  # auto-select GPU/CPU/TPU
-        devices=1,
+        devices=cfg.training.devices,
+        strategy=cfg.training.strategy,
         logger=[loguru_adapter, wandb_logger],
         default_root_dir="hydra_logs",
         callbacks=callbacks,

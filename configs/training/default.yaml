@@ -6,3 +6,5 @@ num_workers: 4
 persistent_workers: true
 pin_memory: true # Set to true if using GPU for faster data transfer
 # learning rate etc. managed in optimizer/
+strategy: "auto"
+devices: "auto"

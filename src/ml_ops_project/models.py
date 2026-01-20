@@ -42,7 +42,6 @@ class SentimentClassifier(pl.LightningModule):
     def __init__(
         self,
         model_name: str,
-        inference_mode: bool = False,
         optimizer_cfg: DictConfig | None = None,
     ) -> None:
         super().__init__()
@@ -59,19 +58,8 @@ class SentimentClassifier(pl.LightningModule):
         self.save_hyperparameters()
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
 
-        if not inference_mode:  # Load the pre-trained model for binary classification (2 labels)
-            if not self.optimizer_cfg:
-                raise AttributeError("A 'NoneType' cannot be passed as optimizer config, when in training mode.")
-
-            self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
-            self.model.train()
-            self.criterion = torch.nn.CrossEntropyLoss()
-
-        else:
-            # Fetch the saved model.
-            path = "../models/epoch-epoch=01-val_accuracy=0.842.ckpt"
-            self.model = AutoModelForSequenceClassification.from_pretrained(path, num_labels=2)
-            self.model.eval()
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_name, num_labels=2)
+        self.criterion = torch.nn.CrossEntropyLoss()
 
         # Separate metric instances per split to avoid state leakage between train/val/test
         self.train_acc = Accuracy(task="multiclass", num_classes=2)

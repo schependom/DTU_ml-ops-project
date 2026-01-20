@@ -510,5 +510,10 @@ docker build -f dockerfiles/monitoring.dockerfile -t sentiment_monitoring:latest
 Run the monitoring container:
 
 ```bash
-docker run --env-file .env -p 8080:8080 --rm sentiment_monitoring:latest
+docker run --env-file .env -p 8080:8080 --rm \
+  -v <path-to-credentials>/dtumlops-cred.json:/gcp/creds.json:ro \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json \
+  sentiment_monitoring:latest
 ```
+
+The `init` flag is important to handle signal forwarding (e.g. `CTRL+C`) correctly.

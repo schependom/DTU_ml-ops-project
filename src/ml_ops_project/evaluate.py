@@ -111,7 +111,7 @@ def evaluate(cfg: DictConfig) -> None:
     # Minimal trainer config for evaluation (no logging, single device)
     trainer = pl.Trainer(
         accelerator="auto",
-        devices=1,
+        devices="auto",
         logger=False,  # Disable logging for standalone evaluation
     )
 

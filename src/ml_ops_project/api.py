@@ -7,6 +7,7 @@ import torch
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from google.cloud import storage
+from prometheus_client import Counter, Histogram, Summary, make_asgi_app
 from pydantic import BaseModel
 
 import wandb
@@ -28,6 +29,13 @@ class PredictionOutput(BaseModel):
     """Define output data structure for the endpoint."""
 
     sentiment: str
+
+
+# Define Prometheus metrics
+error_counter = Counter("prediction_error", "Number of prediction errors")
+request_counter = Counter("prediction_requests", "Number of prediction requests")
+request_latency = Histogram("prediction_latency_seconds", "Prediction latency in seconds")
+review_summary = Summary("review_length_summary", "Review length summary")
 
 
 @asynccontextmanager
@@ -56,6 +64,8 @@ async def lifespan(app: FastAPI):
 
 # Initialize FastAPI app
 app = FastAPI(lifespan=lifespan)
+# Prometheus metrics endpoint
+app.mount("/metrics", make_asgi_app())
 
 
 def download_model_from_wandb():
@@ -119,35 +129,43 @@ def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str):
 @app.post("/predict", response_model=PredictionOutput)
 async def predict_sentiment(review_input: ReviewInput, background_tasks: BackgroundTasks):
     """Predict sentiment of the input text."""
-    try:
-        # Tokenize using the model's tokenizer
-        encoding = model.tokenizer(
-            review_input.review,
-            add_special_tokens=True,
-            max_length=160,
-            return_token_type_ids=False,
-            padding="max_length",
-            truncation=True,  # Added truncation for safety
-            return_attention_mask=True,
-            return_tensors="pt",
-        )
 
-        input_ids = encoding["input_ids"].to(device)
-        attention_mask = encoding["attention_mask"].to(device)
+    # Update Prometheus metrics
+    request_counter.inc()
 
-        # Model prediction
-        with torch.no_grad():
-            # PTL model forward returns a SequenceClassifierOutput
-            # We access .logits from it
-            outputs = model(input_ids, attention_mask)
-            logits = outputs.logits
-            probs = torch.softmax(logits, dim=1)
-            _, prediction = torch.max(logits, dim=1)
-            sentiment = class_names[prediction]
+    # Measure latency
+    with request_latency.time():
+        try:
+            # Tokenize using the model's tokenizer
+            encoding = model.tokenizer(
+                review_input.review,
+                add_special_tokens=True,
+                max_length=160,
+                return_token_type_ids=False,
+                padding="max_length",
+                truncation=True,  # Added truncation for safety
+                return_attention_mask=True,
+                return_tensors="pt",
+            )
 
-        background_tasks.add_task(save_prediction_to_gcp, review_input.review, probs.tolist()[0], sentiment)
+            input_ids = encoding["input_ids"].to(device)
+            attention_mask = encoding["attention_mask"].to(device)
 
-        return PredictionOutput(sentiment=sentiment)
+            # Model prediction
+            with torch.no_grad():
+                # PTL model forward returns a SequenceClassifierOutput
+                # We access .logits from it
+                outputs = model(input_ids, attention_mask)
+                logits = outputs.logits
+                probs = torch.softmax(logits, dim=1)
+                _, prediction = torch.max(logits, dim=1)
+                sentiment = class_names[prediction]
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+            background_tasks.add_task(save_prediction_to_gcp, review_input.review, probs.tolist()[0], sentiment)
+
+            return PredictionOutput(sentiment=sentiment)
+
+        except Exception as e:
+            # Update error counter
+            error_counter.inc()
+            raise HTTPException(status_code=500, detail=str(e)) from e
