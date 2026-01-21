@@ -196,3 +196,6 @@ logs/
 
 /checkpoints
 predictions/
+/artifacts
+
+monitoring.html

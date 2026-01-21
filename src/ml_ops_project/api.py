@@ -4,6 +4,7 @@ import os
 from contextlib import asynccontextmanager
 
 import torch
+import torch.nn.functional as F
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from google.cloud import storage
@@ -121,9 +122,10 @@ async def predict(data: InferenceInput, background_tasks: BackgroundTasks):
 
             with torch.no_grad():
                 logits = model(**input).logits
+                probabilities = F.softmax(logits, dim=1)
                 prediction_id = torch.argmax(logits, dim=1).item()
 
-            background_tasks.add_task(save_prediction_to_gcp, data.statement, logits.tolist()[0], prediction_id, cfg.cloud.bucket_name)
+            background_tasks.add_task(save_prediction_to_gcp, data.statement, probabilities.tolist()[0], prediction_id, cfg.cloud.bucket_name)
 
             return InferenceOutput(sentiment=prediction_id)
 
