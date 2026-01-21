@@ -101,7 +101,7 @@ def dvc(ctx):
 def run_local_api(ctx: Context) -> None:
     """Start FastAPI server. You should call the /inference endpoint."""
     ctx.run(
-        "uv run uvicorn ml_ops_project.api:app --port 8080",
+        "uv run uvicorn src.ml_ops_project.api:app --port 8080",
         echo=True,
         pty=not WINDOWS,
     )
@@ -110,7 +110,7 @@ def run_local_api(ctx: Context) -> None:
 def run_local_monitoring(ctx: Context) -> None:
     """Start FastAPI server for monitoring reports."""
     ctx.run(
-        "uv run uvicorn ml_ops_project.monitoring:app --port 8090",
+        "uv run uvicorn src.ml_ops_project.monitoring:app --port 8090",
         echo=True,
         pty=not WINDOWS,
     )
