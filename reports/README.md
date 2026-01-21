@@ -317,7 +317,7 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 12 fill here ---
+We configured our experiments using Hydra which allows for a modular and hierarchical configuration system. Instead of hardcoding parameters, we use YAML files to manage model architectures, training hyperparameters, and logging. This structure makes it easy to swap different components, such as changing the optimizer from Adam to Nesterov SGD, by updating a configuration reference or using a command line override.
 
 ### Question 13
 
@@ -330,7 +330,7 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 13 fill here ---
+We ensured experiment reproducibility by making the full run configuration and artifacts traceable and recoverable. Experiments are configured with Hydra (`configs/`) and we seed all RNGs at the start of training (`pl.seed_everything(cfg.training.seed)`), so data shuffling and training behavior are deterministic as far as the stack allows. For each run we initialize Weights & Biases with the *entire resolved Hydra config* (`wandb.init(config=OmegaConf.to_container(cfg, resolve=True))`), meaning all hyperparameters and overrides (model name, optimizer settings like lr/weight decay/betas, batch size, etc.) are stored alongside metrics and run metadata (tags/notes). We also checkpoint the best model based on validation accuracy and, when W&B is enabled, upload checkpoints as W&B Artifacts (`log_model="all"`), so the exact weights can be retrieved later. Finally, dependency versions are pinned via `uv.lock`/`pyproject.toml`, and our dataset is versioned with DVC (stored in a GCP bucket), so rerunning the same code + data + config reproduces the experiment.
 
 ### Question 14
 
@@ -342,8 +342,6 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 > _As seen in the first image when have tracked ... and ... which both inform us about ... in our experiments._ > _As seen in the second image we are also tracking ... and ..._
 >
 > Answer:
-
---- question 14 fill here ---
 
 In our training script (`src/ml_ops_project/train.py`) we use a `WandbLogger` to track the key metrics emitted by the Lightning model during training and evaluation (defined in `src/ml_ops_project/models.py`). We log **loss** and **accuracy** for training, validation, and test so we can monitor optimization progress and generalization.
 
