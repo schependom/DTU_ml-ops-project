@@ -343,8 +343,6 @@ We ensured experiment reproducibility by making the full run configuration and a
 >
 > Answer:
 
---- question 14 fill here ---
-
 In our training script (`src/ml_ops_project/train.py`) we use a `WandbLogger` to track the key metrics emitted by the Lightning model during training and evaluation (defined in `src/ml_ops_project/models.py`). We log **loss** and **accuracy** for training, validation, and test so we can monitor optimization progress and generalization.
 
 In the screenshot below, training loss decreases while training accuracy increases, which indicates the model is learning the sentiment classification task. The validation curves provide a signal of generalization: validation loss rises and validation accuracy drops toward the end, suggesting that overfitting might be happening. Finally, the single test loss/accuracy points summarize the final performance on held-out data using the best checkpoint selected during training.
