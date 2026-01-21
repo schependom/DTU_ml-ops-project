@@ -17,3 +17,6 @@ inference:
   registry: "wandb-registry-model_registry"
   collection: "sentiment_classifier_models"
   alias: "inference"
+
+cloud:
+  BUCKET_NAME: "ml_ops_project_g7"

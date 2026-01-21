@@ -1,9 +1,12 @@
+import datetime
+import json
 import os
 from contextlib import asynccontextmanager
 
 import torch
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from google.cloud import storage
 from hydra import compose, initialize
 from pydantic import BaseModel
 
@@ -30,10 +33,7 @@ def wandb_setup(path: str):
     return model_dir
 
 
-def load_model():
-    with initialize(version_base="1.2", config_path="../../configs"):
-        # Load the config object
-        cfg = compose(config_name="config")
+def load_model(cfg):
     path = f"{cfg.inference.registry}/{cfg.inference.collection}:{cfg.inference.alias}"
     model_dir = wandb_setup(path)
 
@@ -42,9 +42,32 @@ def load_model():
     return model
 
 
+# Save prediction results to GCP
+def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str, bucket_name: str):
+    """Save the prediction results to GCP bucket."""
+
+    client = storage.Client()
+    bucket = client.bucket(bucket_name)
+    time = datetime.datetime.now(tz=datetime.UTC)
+    # Prepare prediction data
+    data = {
+        "review": review,
+        "sentiment": sentiment,
+        "probability": outputs,
+        "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+    }
+    blob = bucket.blob(f"predictions/prediction_{time}.json")
+    blob.upload_from_string(json.dumps(data))
+    print("Prediction saved to GCP bucket.")
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ml_models["model"] = load_model()
+    with initialize(version_base="1.2", config_path="../../configs"):
+        # Load the config object
+        cfg = compose(config_name="config")
+
+    ml_models["model"] = load_model(cfg)
     ml_models["tokenizer"] = ml_models["model"].tokenizer
 
     yield
