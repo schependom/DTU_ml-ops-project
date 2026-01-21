@@ -169,6 +169,26 @@ dvc remote add -d gcp gs://ml_ops_project_g7
 
 Then, follow the usage instructions below to pull the data.
 
+#### Hosting the API on Google cloud.
+The FastAPI app defining the API is in `src/ml_ops_project/api.py`. The corresponding dockerfile can be found in `dockerfiles/api.dockerfile`.
+
+To host the API, you first need to push it to the artifact registry:
+- open Docker Desktop
+- Run the following command from the project root:
+`docker build -f ./dockerfiles/api.dockerfile . -t api:latest`
+- Tag the image (find project-id and repository-id by entering a repository in the artifact registry on Google Cloud)
+`docker tag api europe-west1-docker.pkg.dev/<project-id>/<repository-id>/api:latest`
+- Push the image:
+`docker push europe-west1-docker.pkg.dev/<project-id>/<repository-id>/api:latest`
+- Deploy a service on Cloud Run configured from the image or via the following command.
+`gcloud run deploy <service-name> --image <image-name>:<image-tag> --platform managed --region europe-west1 --allow-unauthenticated`
+
+Finally, verify that it's up and running:   
+`gcloud run services list`
+`gcloud run services describe <service-name> --region europe-west1`
+
+
+
 ## Usage
 
 You can use `invoke` to run common tasks. To list available tasks, run:
