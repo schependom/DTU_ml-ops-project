@@ -101,7 +101,57 @@ def dvc(ctx):
 def run_local_api(ctx: Context) -> None:
     """Start FastAPI server. You should call the /inference endpoint."""
     ctx.run(
-        "uv run uvicorn ml_ops_project.api:app --port 8080 --host 0.0.0.0",
+        "uv run uvicorn src.ml_ops_project.api:app --port 8080",
+        echo=True,
+        pty=not WINDOWS,
+    )
+
+@task
+def run_local_monitoring(ctx: Context) -> None:
+    """Start FastAPI server for monitoring reports."""
+    ctx.run(
+        "uv run uvicorn src.ml_ops_project.monitoring:app --port 8090",
+        echo=True,
+        pty=not WINDOWS,
+    )
+
+
+@task
+def api_container(ctx: Context) -> None:
+    """Run the API server in a Docker container."""
+
+    print("Make sure you have the GCP credentials JSON file ready.")
+    print("You will be prompted to provide the path to this file.")
+    print("Also, make sure your .env file is set up correctly.")
+
+    # Ask user for path to GCP credentials
+    credentials_path = input("Enter the path to your GCP credentials JSON file: ")
+
+    ctx.run(
+        f"docker run --env-file .env -p 8080:8080 --rm "
+        f"-v {credentials_path}:/gcp/creds.json:ro "
+        "-e GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json "
+        "sentiment_api:latest",
+        echo=True,
+        pty=not WINDOWS,
+    )
+
+@task
+def monitoring_container(ctx: Context) -> None:
+    """Run the monitoring server in a Docker container."""
+
+    print("Make sure you have the GCP credentials JSON file ready.")
+    print("You will be prompted to provide the path to this file.")
+    print("Also, make sure your .env file is set up correctly.")
+
+    # Ask user for path to GCP credentials
+    credentials_path = input("Enter the path to your GCP credentials JSON file: ")
+
+    ctx.run(
+        f"docker run --env-file .env -p 8090:8090 --rm "
+        f"-v {credentials_path}:/gcp/creds.json:ro "
+        "-e GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json "
+        "monitoring_api:latest",
         echo=True,
         pty=not WINDOWS,
     )
