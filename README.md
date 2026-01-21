@@ -19,8 +19,9 @@ The dataset includes thousands of critic reviews covering many movies, along wit
 ### Prediction target
 
 The primary task is to, based on the review text, predict whether the review is positive or negative. This is a binary classification task:
--   `0 = negative`
--   `1 = positive`
+
+- `0 = negative`
+- `1 = positive`
 
 ### Models
 
@@ -28,21 +29,21 @@ We will do transfer learning using the **DistilBERT (`distilbert-base-uncased`)*
 
 DistilBERT is ~40% smaller and ~60% faster than BERT while retaining ~97% of its performance. This enables:
 
--   Faster experimentation
--   Practical hyperparameter sweeps (W&B)
--   CI-compatible training smoke tests
+- Faster experimentation
+- Practical hyperparameter sweeps (W&B)
+- CI-compatible training smoke tests
 
 ### Training and Experimentation
 
 Our training pipeline will include:
 
--   **Config-driven runs** (Hydra)
--   **Experiment tracking via W&B** (metrics, artifact storage, training curves)
--   Checkpointing + reproducible seeds
--   Cloud Computing via Google Cloud Platform (GCP):
-    -   Buckets for storing data and models (in combination with `dvc`)
-    -   Artifact Registry for storing container images
-    -   Vertex AI for training
+- **Config-driven runs** (Hydra)
+- **Experiment tracking via W&B** (metrics, artifact storage, training curves)
+- Checkpointing + reproducible seeds
+- Cloud Computing via Google Cloud Platform (GCP):
+    - Buckets for storing data and models (in combination with `dvc`)
+    - Artifact Registry for storing container images
+    - Vertex AI for training
 
 ## Installation
 
@@ -328,6 +329,7 @@ docker build --platform linux/amd64 -f dockerfiles/train.dockerfile . -t train:l
 # Windows on AMD64 -> ARM64 (e.g. Apple Silicon)
 docker build --platform linux/arm64 -f dockerfiles/train.dockerfile . -t train:latest
 ```
+
 </details>
 
 ### Running Docker Containers
@@ -371,14 +373,14 @@ Use volumes to share data between host and container.
 
 If data changes frequently, or if you want to automatically sync outputs (models, reports) to your host machine, use mounted volumes:
 
--   Models (`models/`)
--   Configs (`configs/`)
+- Models (`models/`)
+- Configs (`configs/`)
 
 #### When not to mount volumes?
 
 If data is static and large, or if you want a fully self-contained container, **copy** data into the image during build, don't mount volumes:
 
--   Data (`data/`)
+- Data (`data/`)
 
 #### Examples
 
@@ -472,4 +474,27 @@ Clean up everything (stopped containers, dangling images, unused networks):
 
 ```bash
 docker system prune
+```
+
+### Api container
+
+Build the api image:
+
+```bash
+docker build -f dockerfiles/api.dockerfile -t sentiment_api:latest .
+```
+
+Run the api container:
+
+```bash
+docker run --env-file .env --rm sentiment_api:latest
+```
+
+Note that `.env` should look something like this:
+
+```
+WANDB_API_KEY=...
+WANDB_PROJECT=MLOps-Project
+WANDB_ENTITY=MLOpsss
+WANDB_ORGANIZATION=turtle_team-org
 ```
