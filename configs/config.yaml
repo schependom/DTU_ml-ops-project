@@ -11,3 +11,10 @@ data_dir: "data/"  # or "gcs/ml_ops_project_g7/data" for Vertex AI
 hydra:
   job:
     chdir: False
+
+inference:
+  enabled: True
+  registry: "wandb-registry-model_registry"
+  collection: "sentiment_classifier_models"
+  alias: "inference"
+  
