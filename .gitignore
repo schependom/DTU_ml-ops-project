@@ -195,3 +195,4 @@ logs/
 /models
 
 /checkpoints
+predictions/
