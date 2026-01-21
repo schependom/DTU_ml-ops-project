@@ -11,7 +11,7 @@ import requests
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", type=str, default="http://localhost:8000/predict")
+    parser.add_argument("--url", type=str, default="http://localhost:8080/inference")
     parser.add_argument("--wait_time", type=int, default=5)
     parser.add_argument("--max_iterations", type=int, default=1000)
     args = parser.parse_args()
@@ -43,7 +43,7 @@ if __name__ == "__main__":
             if random.random() < negativity_probability:
                 updated_review += " " + phrase
 
-        response = requests.post(args.url, json={"review": updated_review}, timeout=10)
+        response = requests.post(args.url, json={"statement": updated_review}, timeout=10)
         print(f"Iteration {count}, Sent review: {updated_review}, Response: {response.json()}")
         time.sleep(args.wait_time)
         count += 1

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 import torch
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, BackgroundTasks
 from google.cloud import storage
 from hydra import compose, initialize
 from pydantic import BaseModel
@@ -49,18 +49,21 @@ def load_model(cfg):
 
 
 # Save prediction results to GCP
-def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str, bucket_name: str):
+def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: int, bucket_name: str):
     """Save the prediction results to GCP bucket."""
 
     client = storage.Client()
+    print(client)
     bucket = client.bucket(bucket_name)
-    time = datetime.datetime.now(tz=datetime.UTC)
+    print(bucket_name)
+    print(bucket)
+    time = datetime.datetime.now(tz=datetime.timezone.utc)
     # Prepare prediction data
     data = {
         "review": review,
         "sentiment": sentiment,
         "probability": outputs,
-        "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
+        "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
     }
     blob = bucket.blob(f"predictions/prediction_{time}.json")
     blob.upload_from_string(json.dumps(data))

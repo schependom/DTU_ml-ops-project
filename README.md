@@ -487,7 +487,10 @@ docker build -f dockerfiles/api.dockerfile -t sentiment_api:latest .
 Run the api container:
 
 ```bash
-docker run --env-file .env --rm sentiment_api:latest
+docker run --env-file .env -p 8080:8080 --rm \
+  -v <path-to-credentials>/dtumlops-cred.json:/gcp/creds.json:ro \
+  -e GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json \
+  sentiment_api:latest
 ```
 
 Note that `.env` should look something like this:

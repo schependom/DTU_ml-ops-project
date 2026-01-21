@@ -98,10 +98,10 @@ def dvc(ctx):
 
 
 @task
-def start_api(ctx: Context) -> None:
-    """Start FastAPI server."""
+def run_local_api(ctx: Context) -> None:
+    """Start FastAPI server. You should call the /inference endpoint."""
     ctx.run(
-        "uv run uvicorn ml_ops_project.api:app --reload",
+        "uv run uvicorn ml_ops_project.api:app --port 8080 --host 0.0.0.0",
         echo=True,
         pty=not WINDOWS,
     )
