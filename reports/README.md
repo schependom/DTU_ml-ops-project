@@ -317,7 +317,7 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 12 fill here ---
+We configured our experiments using Hydra which allows for a modular and hierarchical configuration system. Instead of hardcoding parameters, we use YAML files to manage model architectures, training hyperparameters, and logging. This structure makes it easy to swap different components, such as changing the optimizer from Adam to Nesterov SGD, by updating a configuration reference or using a command line override.
 
 ### Question 13
 
