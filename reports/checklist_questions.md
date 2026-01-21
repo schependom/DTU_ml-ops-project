@@ -24,10 +24,10 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 ## Running code and tracking experiments
 
-- [ ] **Q12**: Experiment configuration (config files) + example commands
-- [ ] **Q13**: Reproducibility: how runs are tracked and reproducible
-- [ ] **Q14**: W&B screenshots + which metrics you track and why
-- [ ] **Q15**: Docker usage + how to run images + link to a Dockerfile
+- [x] **Q12**: Experiment configuration (config files) + example commands
+- [x] **Q13**: Reproducibility: how runs are tracked and reproducible
+- [...] **Q14**: W&B screenshots + which metrics you track and why
+- [x] **Q15**: Docker usage + how to run images + link to a Dockerfile
 - [ ] **Q16**: Debugging approach + profiling (or why not)
 
 ## Working in the cloud

@@ -362,7 +362,16 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 15 fill here ---
+We used Docker to make our ML pipeline **reproducible and deployable** across laptops and GCP. We created separate images for **training** (`dockerfiles/train.dockerfile`) and **evaluation** (`dockerfiles/evaluate.dockerfile`) using an `uv`-based Python image and `uv.lock`, so the container captures OS-level dependencies and a fully pinned Python environment. This makes our experiments run the same way locally, in CI, and in Cloud Build.
+
+For training we build and run the container and pass Hydra overrides at runtime:
+`docker build -f dockerfiles/train.dockerfile . -t train:latest`
+`docker run --rm -v "$(pwd)/models:/models" -e WANDB_API_KEY=$WANDB_API_KEY train:latest training.max_epochs=3 training.batch_size=32 optimizer.lr=1e-3`
+Mounting `models/` lets checkpoints persist on the host.
+
+For deployment we also prepared lightweight API/monitoring images (`dockerfiles/api.dockerfile`, `dockerfiles/monitoring.dockerfile`) that start a FastAPI service on port 8080 (Cloud Run compatible).
+
+Link to Dockerfile: [`dockerfiles/train.dockerfile`](../dockerfiles/train.dockerfile)
 
 ### Question 16
 
