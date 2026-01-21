@@ -29,10 +29,10 @@ def wandb_setup(path: str):
     wandb.login(key=os.getenv("WANDB_SERVICE_USER"))
 
     organization = os.getenv("WANDB_ORGANIZATION")
-    run = wandb.init(project="MLOps-Project", job_type="inference")
+    project = os.getenv("WANDB_PROJECT")
+    run = wandb.init(project=project, job_type="inference")
 
     artifact_path = organization + "/" + path
-    # entity/registry/collection:alias
     artifact = run.use_artifact(artifact_path, type="model")
 
     model_dir = artifact.download()
