@@ -14,8 +14,8 @@ Usage:
 import os
 
 import hydra
-import torch
 import pytorch_lightning as pl
+import torch
 from dotenv import load_dotenv
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
@@ -169,7 +169,7 @@ def train(cfg: DictConfig) -> None:
     trainer = pl.Trainer(
         max_epochs=cfg.training.max_epochs,
         accelerator="auto",  # auto-select GPU/CPU/TPU
-        devices=1,
+        devices="auto",
         logger=[loguru_adapter, wandb_logger],
         default_root_dir="hydra_logs",
         callbacks=callbacks,
