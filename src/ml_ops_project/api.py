@@ -9,6 +9,7 @@ from fastapi import FastAPI, HTTPException
 from google.cloud import storage
 from hydra import compose, initialize
 from pydantic import BaseModel
+from prometheus_client import Counter, Histogram, Summary, make_asgi_app
 
 load_dotenv()
 
@@ -18,6 +19,11 @@ from ml_ops_project.models import SentimentClassifier
 ml_models = {}
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+# Define Prometheus metrics
+error_counter = Counter("prediction_error", "Number of prediction errors")
+request_counter = Counter("prediction_requests", "Number of prediction requests")
+request_latency = Histogram("prediction_latency_seconds", "Prediction latency in seconds")
+review_summary = Summary("review_length_summary", "Review length summary")
 
 def wandb_setup(path: str):
     wandb.login(key=os.getenv("WANDB_SERVICE_USER"))
@@ -61,11 +67,13 @@ def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: str, bu
     print("Prediction saved to GCP bucket.")
 
 
+# Make config object available globally
+with initialize(version_base="1.2", config_path="../../configs"):
+    # Load the config object
+    cfg = compose(config_name="config")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    with initialize(version_base="1.2", config_path="../../configs"):
-        # Load the config object
-        cfg = compose(config_name="config")
 
     ml_models["model"] = load_model(cfg)
     ml_models["tokenizer"] = ml_models["model"].tokenizer
@@ -77,6 +85,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+# Prometheus metrics endpoint
+app.mount("/metrics", make_asgi_app())
 
 
 # input schema
@@ -90,22 +100,33 @@ class InferenceOutput(BaseModel):
 
 # inference endpoint
 @app.post("/inference", response_model=InferenceOutput)
-async def predict(data: InferenceInput):
-    try:
-        model = ml_models.get("model")
-        tokenizer = ml_models.get("tokenizer")
+async def predict(data: InferenceInput, background_tasks: BackgroundTasks):
+    # Update Prometheus metrics
+    request_counter.inc()
 
-        if not model:
-            raise HTTPException(status_code=500, detail="Model not loaded")
+    # Measure latency
+    with request_latency.time():
+        try:
+            model = ml_models.get("model")
+            tokenizer = ml_models.get("tokenizer")
 
-        # Perform inference
-        input = tokenizer(data.statement, return_tensors="pt", padding=True, truncation=True)
+            if not model:
+                raise HTTPException(status_code=500, detail="Model not loaded")
 
-        with torch.no_grad():
-            logits = model(**input).logits
-            prediction_id = torch.argmax(logits, dim=1).item()
+            # Perform inference
+            input = tokenizer(data.statement, return_tensors="pt", padding=True, truncation=True)
 
-        return InferenceOutput(sentiment=prediction_id)
+            with torch.no_grad():
+                logits = model(**input).logits
+                prediction_id = torch.argmax(logits, dim=1).item()
 
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) from e
+            background_tasks.add_task(save_prediction_to_gcp, data.statement, logits.tolist()[0], prediction_id, cfg.cloud.bucket_name)
+
+            return InferenceOutput(sentiment=prediction_id)
+
+        except Exception as e:
+
+            # Increment error counter
+            error_counter.inc()
+
+            raise HTTPException(status_code=500, detail=str(e)) from e

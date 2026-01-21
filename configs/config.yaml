@@ -19,4 +19,4 @@ inference:
   alias: "inference"
 
 cloud:
-  BUCKET_NAME: "ml_ops_project_g7"
+  bucket_name: "ml_ops_project_g7"
