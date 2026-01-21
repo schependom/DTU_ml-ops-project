@@ -329,7 +329,7 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 13 fill here ---
+We ensured experiment reproducibility by making the full run configuration and artifacts traceable and recoverable. Experiments are configured with Hydra (`configs/`) and we seed all RNGs at the start of training (`pl.seed_everything(cfg.training.seed)`), so data shuffling and training behavior are deterministic as far as the stack allows. For each run we initialize Weights & Biases with the *entire resolved Hydra config* (`wandb.init(config=OmegaConf.to_container(cfg, resolve=True))`), meaning all hyperparameters and overrides (model name, optimizer settings like lr/weight decay/betas, batch size, etc.) are stored alongside metrics and run metadata (tags/notes). We also checkpoint the best model based on validation accuracy and, when W&B is enabled, upload checkpoints as W&B Artifacts (`log_model="all"`), so the exact weights can be retrieved later. Finally, dependency versions are pinned via `uv.lock`/`pyproject.toml`, and our dataset is versioned with DVC (stored in a GCP bucket), so rerunning the same code + data + config reproduces the experiment.
 
 ### Question 14
 
