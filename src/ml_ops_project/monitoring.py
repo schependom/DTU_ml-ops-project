@@ -24,8 +24,10 @@ BUCKET_NAME = "ml_ops_project_g7"  # Used for saving predictions
 REPORT_FILE = "monitoring.html"
 
 
-def sentiment_to_numeric(sentiment: str) -> int:
+def sentiment_to_numeric(sentiment: str | int) -> int:
     """Convert sentiment class to numeric."""
+    if isinstance(sentiment, int):
+        return sentiment
     if sentiment == "negative":
         return 0
     return 1  # positive
@@ -38,7 +40,7 @@ def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> No
             f.write("<html><body><h1>No data available for monitoring report yet.</h1></body></html>")
         return
 
-    data_definition = DataDefinition(text_columns=["content"])
+    data_definition = DataDefinition(text_columns=["statement"])
 
     # Ensure both datasets have the same columns for comparison
     common_columns = list(set(reference_data.columns) & set(current_data.columns))
@@ -46,7 +48,7 @@ def run_analysis(reference_data: pd.DataFrame, current_data: pd.DataFrame) -> No
     reference_dataset = EvidentlyDataset.from_pandas(reference_data[common_columns], data_definition=data_definition)
     current_dataset = EvidentlyDataset.from_pandas(current_data[common_columns], data_definition=data_definition)
 
-    text_overview_report = Report(metrics=[TextEvals(columns=["content"]), DataDriftPreset(), DataSummaryPreset()])
+    text_overview_report = Report(metrics=[DataDriftPreset(), DataSummaryPreset()])
 
     report_result = text_overview_report.run(
         reference_data=reference_dataset,
@@ -64,7 +66,7 @@ def lifespan(app: FastAPI):
 
     # Rename columns to match Evidently expectations and our internal naming
     # Rotten Tomatoes has 'text' and 'label'
-    training_data = training_data.rename(columns={"text": "content", "label": "target"})
+    training_data = training_data.rename(columns={"text": "statement", "label": "target"})
 
     class_names = ["negative", "positive"]
 
@@ -97,12 +99,12 @@ def load_latest_files(directory: Path, n: int) -> pd.DataFrame:
             data = json.load(f)
             reviews.append(data["review"])
             sentiment.append(sentiment_to_numeric(data["sentiment"]))
-    dataframe = pd.DataFrame({"content": reviews, "sentiment": sentiment})
+    dataframe = pd.DataFrame({"statement": reviews, "sentiment": sentiment})
     dataframe["target"] = dataframe["sentiment"]
 
     # Enforce correct data types to prevent Evidently from inferring wrong types for empty dataframes
     if dataframe.empty:
-        dataframe["content"] = dataframe["content"].astype("object")
+        dataframe["statement"] = dataframe["statement"].astype("object")
         dataframe["sentiment"] = pd.Series([], dtype="int64")
         dataframe["target"] = pd.Series([], dtype="int64")
 
