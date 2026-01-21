@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install dependencies directly to minimize complexity
-RUN pip install fastapi uvicorn python-dotenv torch transformers wandb google-cloud-storage pytorch-lightning hydra-core torchmetrics pydantic pandas --no-cache-dir
+RUN pip install fastapi uvicorn python-dotenv torch transformers wandb google-cloud-storage pytorch-lightning hydra-core torchmetrics pydantic pandas prometheus-client --no-cache-dir
 
 # Copy source code and configs
 COPY src/ /app/src/
