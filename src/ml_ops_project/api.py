@@ -13,6 +13,7 @@ import os
 from contextlib import asynccontextmanager
 
 import torch
+import torch.nn.functional as F
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from google.cloud import storage
@@ -20,10 +21,10 @@ from hydra import compose, initialize
 from prometheus_client import Counter, Histogram, Summary, make_asgi_app
 from pydantic import BaseModel
 
-load_dotenv()
-
 import wandb
 from ml_ops_project.models import SentimentClassifier
+
+load_dotenv()
 
 # Cache for loaded model and tokenizer to avoid reloads per request
 ml_models = {}
@@ -145,11 +146,15 @@ async def predict(data: InferenceInput, background_tasks: BackgroundTasks):
 
             with torch.no_grad():
                 logits = model(**input).logits
-                logits_cpu = logits.detach().cpu()
-                prediction_id = torch.argmax(logits_cpu, dim=1).item()
+                probabilities = F.softmax(logits, dim=1).detach().cpu()
+                prediction_id = torch.argmax(logits, dim=1).item()
 
             background_tasks.add_task(
-                save_prediction_to_gcp, data.statement, logits_cpu.tolist()[0], prediction_id, cfg.cloud.bucket_name
+                save_prediction_to_gcp,
+                data.statement,
+                probabilities.tolist()[0],
+                prediction_id,
+                cfg.cloud.bucket_name,
             )
 
             return InferenceOutput(sentiment=prediction_id)

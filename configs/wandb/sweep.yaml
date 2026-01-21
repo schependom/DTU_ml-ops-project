@@ -1,7 +1,7 @@
 # WandB hyperparameter sweep configuration file
 
 program: src/ml_ops_project/train.py
-method: random # random/grid/bayes
+method: bayes
 command:
   - ${env}
   - python
@@ -20,6 +20,4 @@ parameters:
         distribution: log_uniform_values
     training.batch_size:
         values: [16, 64]
-    training.max_epochs:
-        values: [5, 15]
 run_cap: 10

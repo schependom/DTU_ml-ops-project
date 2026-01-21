@@ -68,10 +68,10 @@ will check the repositories and the code to verify your answers.
 - [x] Build the docker files locally and make sure they work as intended (M10)
 - [x] Write one or multiple configurations files for your experiments (M11)
 - [x] Used Hydra to load the configurations and manage your hyperparameters (M11)
-- [NO] Use profiling to optimize your code (M12)
+- [ ] Use profiling to optimize your code (M12)
 - [x] Use logging to log important events in your code (M14)
 - [x] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
-- [ ] Consider running a hyperparameter optimization sweep (M14)
+- [x] Consider running a hyperparameter optimization sweep (M14)
 - [x] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
@@ -330,7 +330,7 @@ We configured our experiments using Hydra which allows for a modular and hierarc
 >
 > Answer:
 
-We ensured experiment reproducibility by making the full run configuration and artifacts traceable and recoverable. Experiments are configured with Hydra (`configs/`) and we seed all RNGs at the start of training (`pl.seed_everything(cfg.training.seed)`), so data shuffling and training behavior are deterministic as far as the stack allows. For each run we initialize Weights & Biases with the *entire resolved Hydra config* (`wandb.init(config=OmegaConf.to_container(cfg, resolve=True))`), meaning all hyperparameters and overrides (model name, optimizer settings like lr/weight decay/betas, batch size, etc.) are stored alongside metrics and run metadata (tags/notes). We also checkpoint the best model based on validation accuracy and, when W&B is enabled, upload checkpoints as W&B Artifacts (`log_model="all"`), so the exact weights can be retrieved later. Finally, dependency versions are pinned via `uv.lock`/`pyproject.toml`, and our dataset is versioned with DVC (stored in a GCP bucket), so rerunning the same code + data + config reproduces the experiment.
+We ensured experiment reproducibility by making the full run configuration and artifacts traceable and recoverable. Experiments are configured with Hydra (`configs/`) and we seed all RNGs at the start of training (`pl.seed_everything(cfg.training.seed)`), so data shuffling and training behavior are deterministic as far as the stack allows. For each run we initialize Weights & Biases with the _entire resolved Hydra config_ (`wandb.init(config=OmegaConf.to_container(cfg, resolve=True))`), meaning all hyperparameters and overrides (model name, optimizer settings like lr/weight decay/betas, batch size, etc.) are stored alongside metrics and run metadata (tags/notes). We also checkpoint the best model based on validation accuracy and, when W&B is enabled, upload checkpoints as W&B Artifacts (`log_model="all"`), so the exact weights can be retrieved later. Finally, dependency versions are pinned via `uv.lock`/`pyproject.toml`, and our dataset is versioned with DVC (stored in a GCP bucket), so rerunning the same code + data + config reproduces the experiment.
 
 ### Question 14
 
