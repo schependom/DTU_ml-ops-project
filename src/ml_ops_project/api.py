@@ -1,3 +1,12 @@
+"""FastAPI inference service for sentiment classification.
+
+This module provides:
+1. Model loading via W&B artifacts with Hydra config
+2. Prometheus metrics for requests, latency, and errors
+3. An inference endpoint that returns a sentiment label
+4. Optional persistence of predictions to a GCP bucket
+"""
+
 import datetime
 import json
 import os
@@ -5,26 +14,35 @@ from contextlib import asynccontextmanager
 
 import torch
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, BackgroundTasks
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 from google.cloud import storage
 from hydra import compose, initialize
-from pydantic import BaseModel
 from prometheus_client import Counter, Histogram, Summary, make_asgi_app
+from pydantic import BaseModel
 
 load_dotenv()
 
 import wandb
 from ml_ops_project.models import SentimentClassifier
 
+# Cache for loaded model and tokenizer to avoid reloads per request
 ml_models = {}
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# Select the best available device for inference
+if torch.backends.mps.is_available():
+    device = torch.device("mps")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 
-# Define Prometheus metrics
+# Define Prometheus metrics for request observability
 error_counter = Counter("prediction_error", "Number of prediction errors")
 request_counter = Counter("prediction_requests", "Number of prediction requests")
 request_latency = Histogram("prediction_latency_seconds", "Prediction latency in seconds")
 review_summary = Summary("review_length_summary", "Review length summary")
 
+
+# Load model artifacts from W&B to a local directory
 def wandb_setup(path: str):
     wandb.login(key=os.getenv("WANDB_SERVICE_USER"))
 
@@ -39,6 +57,7 @@ def wandb_setup(path: str):
     return model_dir
 
 
+# Build the model from the W&B checkpoint referenced in config
 def load_model(cfg):
     path = f"{cfg.inference.registry}/{cfg.inference.collection}:{cfg.inference.alias}"
     model_dir = wandb_setup(path)
@@ -48,7 +67,7 @@ def load_model(cfg):
     return model
 
 
-# Save prediction results to GCP
+# Save prediction results to a GCP bucket for auditability
 def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: int, bucket_name: str):
     """Save the prediction results to GCP bucket."""
 
@@ -70,16 +89,20 @@ def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: int, bu
     print("Prediction saved to GCP bucket.")
 
 
-# Make config object available globally
+# Make Hydra config available globally for startup and requests
 with initialize(version_base="1.2", config_path="../../configs"):
     # Load the config object
     cfg = compose(config_name="config")
 
+
+# Startup and shutdown lifecycle: load model once, clear on exit
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
-    ml_models["model"] = load_model(cfg)
-    ml_models["tokenizer"] = ml_models["model"].tokenizer
+    model = load_model(cfg)
+    model.to(device)
+    model.eval()
+    ml_models["model"] = model
+    ml_models["tokenizer"] = model.tokenizer
 
     yield
 
@@ -87,12 +110,12 @@ async def lifespan(app: FastAPI):
     print("Cleaning up model resources...")
 
 
+# Create the FastAPI app and expose Prometheus metrics
 app = FastAPI(lifespan=lifespan)
-# Prometheus metrics endpoint
 app.mount("/metrics", make_asgi_app())
 
 
-# input schema
+# Request/response schemas for the inference endpoint
 class InferenceInput(BaseModel):
     statement: str
 
@@ -101,7 +124,7 @@ class InferenceOutput(BaseModel):
     sentiment: int
 
 
-# inference endpoint
+# Inference endpoint: validate input, run model, enqueue GCP write
 @app.post("/inference", response_model=InferenceOutput)
 async def predict(data: InferenceInput, background_tasks: BackgroundTasks):
     # Update Prometheus metrics
@@ -118,17 +141,20 @@ async def predict(data: InferenceInput, background_tasks: BackgroundTasks):
 
             # Perform inference
             input = tokenizer(data.statement, return_tensors="pt", padding=True, truncation=True)
+            input = {key: value.to(device) for key, value in input.items()}
 
             with torch.no_grad():
                 logits = model(**input).logits
-                prediction_id = torch.argmax(logits, dim=1).item()
+                logits_cpu = logits.detach().cpu()
+                prediction_id = torch.argmax(logits_cpu, dim=1).item()
 
-            background_tasks.add_task(save_prediction_to_gcp, data.statement, logits.tolist()[0], prediction_id, cfg.cloud.bucket_name)
+            background_tasks.add_task(
+                save_prediction_to_gcp, data.statement, logits_cpu.tolist()[0], prediction_id, cfg.cloud.bucket_name
+            )
 
             return InferenceOutput(sentiment=prediction_id)
 
         except Exception as e:
-
             # Increment error counter
             error_counter.inc()
 
