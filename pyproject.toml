@@ -45,6 +45,7 @@ dependencies = [
     "nltk>=3.9.2",
     "evidently>=0.7.20",
     "locust>=2.43.1",
+    "google-cloud-run>=0.14.0",
 ]
 
 # Optional dependency groups, which can be installed using:
