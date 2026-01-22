@@ -12,6 +12,7 @@ Usage:
 import argparse
 import os
 import shutil
+
 import wandb
 
 
@@ -163,9 +164,6 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-
-
-
 def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: str) -> None:
     """Trigger a redeployment of a Cloud Run service to pull the latest model.
 
@@ -228,9 +226,7 @@ def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: s
 
 if __name__ == "__main__":
     args = parse_args()
-    
 
-    
     promote_best_model(
         args.entity,
         args.project,
