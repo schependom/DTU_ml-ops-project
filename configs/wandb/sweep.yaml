@@ -15,9 +15,9 @@ metric:
     name: val_loss
 parameters:
     optimizer.lr:
-        min: 0.0001
-        max: 0.1
+        min: 1e-5
+        max: 5e-4
         distribution: log_uniform_values
     training.batch_size:
-        values: [16, 64]
+        values: [16, 64, 128]
 run_cap: 10
