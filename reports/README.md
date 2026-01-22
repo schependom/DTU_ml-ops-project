@@ -642,7 +642,7 @@ Additionally, integrating multiple servicesâ€”DVC, W&B, GCP, and GitHub Actionsâ
 
 **Student s204078** wrote tests and created GitHub Actions workflows. Responsible for code structure including comments, linting setup, and contributed to report questions.
 
-**Student s202186** mainly worked on visualization, tests, load testing with Locust, and contributed to report questions.
+**Student s202186** mainly worked on visualization, tests with pytest, load testing with Locust, and contributed to report questions.
 
 **Student s214631** worked on the API and deployment infrastructure. Set up uv for dependency management, implemented tasks and Hydra configuration, built Dockerfiles, created the FastAPI application, handled cloud deployment, and configured alerts.
 
