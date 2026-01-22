@@ -163,29 +163,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    args = parse_args()
-    promote_best_model(
-        args.entity,
-        args.project,
-        args.metric,
-        args.mode,
-        args.registry,
-        args.collection,
-        args.alias,
-        args.target_entity,
-    )
-    
-    # --- Trigger Cloud Run Redeployment ---
-    if args.deploy_service:
-        if not args.deploy_region or not args.deploy_project:
-            print("Error: --deploy-region and --deploy-project are required when --deploy-service is set.")
-        else:
-            trigger_cloud_run_redeployment(
-                service_name=args.deploy_service,
-                region=args.deploy_region,
-                project_id=args.deploy_project
-            )
+
 
 
 def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: str) -> None:
@@ -250,12 +228,7 @@ def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: s
 if __name__ == "__main__":
     args = parse_args()
     
-    # Add deployment arguments manually since we didn't update parse_args yet
-    # But wait, looking at the code, it's better to update parse_args properly.
-    # Let me just update the whole file content for safety/clarity or better yet,
-    # use a separate editing step for parse_args to keep this clean.
-    # Actually, I will modify parse_args in the same tool call if possible or 
-    # just do two chunks. I will assume I need to update parse_args too.
+
     
     promote_best_model(
         args.entity,
