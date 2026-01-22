@@ -47,10 +47,6 @@ Our training pipeline will include:
 
 ## Installation
 
-TODO: uv prerequisite
-TODO: devcontainer
-TODO: native
-
 ### `uv run` alias
 
 I recommend creating an alias `uvr` for `uv run` to make running scripts easier.
