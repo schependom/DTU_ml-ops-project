@@ -19,7 +19,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 - [x] **Q7**: Tests implemented (how many + what they test)
 - [x] **Q8**: Code coverage + why coverage ≠ bug-free
 - [ ] **Q9**: Branches and pull requests workflow (or why it helps)
-- [ ] **Q10**: DVC usage for data version control (or why it would help)
+- [...] **Q10**: DVC usage for data version control (or why it would help)
 - [x] **Q11**: Continuous integration setup (tests/linting/matrix/caching, etc.)
 
 ## Running code and tracking experiments
@@ -32,7 +32,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 ## Working in the cloud
 
-- [ ] **Q17**: GCP services used + short explanation of each
+- [...] **Q17**: GCP services used + short explanation of each
 - [ ] **Q18**: Compute Engine usage + VM types
 - [ ] **Q19**: GCP bucket screenshots (stored data)
 - [ ] **Q20**: Artifact Registry screenshots (docker images)
