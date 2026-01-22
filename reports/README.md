@@ -149,7 +149,7 @@ s214631, s204078, s202186, s251739
 >
 > Answer:
 
-We leveraged **Transfer Learning** by using the Hugging Face ecosystem to fine-tune a pre-trained DistilBERT model for sentiment classification. Specifically, `transformers` allowed us to load the pre-trained `distilbert-base-uncased` weights (trained on a massive corpus) and adapt them to our specific task using `AutoModelForSequenceClassification`. This approach meant we started with a model that already "understood" language, rather than training from scratch. We used `datasets` to fetch the Rotten Tomatoes dataset and PyTorch Lightning to structure the training loop. These tools combined gave us a high-quality NLP baseline with minimal boilerplate, allowing us to focus on the MLOps pipeline.
+We did **Transfer Learning** by using the Hugging Face ecosystem to fine-tune a pre-trained `DistilBERT` model for (Rotten Tomatoes movie) sentiment classification. Specifically, `transformers` allowed us to load the pre-trained `distilbert-base-uncased` weights (trained on a massive corpus) and adapt them to our specific task using `AutoModelForSequenceClassification`. This approach meant we started with a model that already "understood" language, rather than training from scratch. We used `datasets` to fetch the Rotten Tomatoes dataset from Hugging Face and **PyTorch Lightning** for the implementation of the `SentimentClassifier` model, the `RottenTomatoesDataModule` and training/evaluation logic. These tools combined gave us a high-quality NLP baseline with minimal boilerplate, allowing us to focus on the MLOps pipeline.
 
 ## Coding environment
 
@@ -570,7 +570,19 @@ We have not performed load testing yet. To do so, we would follow the course rec
 >
 > Answer:
 
---- question 29 fill here ---
+The diagram below illustrates our end-to-end MLOps pipeline, bridging local development with cloud execution on GCP.
+1.  **Data Ingestion**: We fetch the Rotten Tomatoes dataset from **Hugging Face**, preprocess it, and store the versioned artifacts in a **GCS Bucket** using **DVC**.
+2.  **Local Development**: Developers clone the repo from **GitHub**. They can run local training (logging to **WandB** Projects) or run hyperparameter **Sweeps**.
+3.  **CI/CD Pipeline**: 
+    - On every push, **GitHub Actions** triggers linting (`ruff`) and unit tests (`pytest`).
+    - On a merge to the `release` branch, Actions builds the Docker image and pushes it to Artifact Registry.
+    - It then triggers a **Vertex AI** training job.
+4.  **Training & Evaluation**: Vertex AI pulls the data (via DVC/GCS) and the Docker image. It trains the model, logging metrics and artifacts to **WandB**. 
+5.  **Model Registry & Promotion**: If the trained model is the best one, it is promoted to the **WandB Model Registry**.
+6.  **Deployment**: The pipeline triggers a **Cloud Run** update. The API service pulls the latest "production" model artifact from WandB during startup.
+7.  **Inference & Monitoring**: Users send requests to the **API**. Predictions and feedback are logged for **Drift Detection**, closing the feedback loop.
+
+![MLOps Architecture Overview](figures/overview.jpg)
 
 ### Question 30
 
