@@ -498,7 +498,9 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 >
 > Answer:
 
---- question 25 fill here ---
+We performed API tests using `pytest` and FastAPI’s `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
+
+We have not performed load testing yet. To do so, we would follow the course recommendation and use `locust`, define a `tests/performancetests/locustfile.py` that exercises `/inference` and `/metrics`, and then run Locust headless against the local or Cloud Run endpoint. The metrics we would report are average response time, 99th percentile latency, and requests per second, plus the highest sustained user load before errors or timeouts appear.
 
 ### Question 26
 

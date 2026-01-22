@@ -8,7 +8,7 @@ import pandas as pd
 from datasets import load_dataset
 from evidently import DataDefinition, Report
 from evidently import Dataset as EvidentlyDataset
-from evidently.presets import DataDriftPreset, DataSummaryPreset, TextEvals
+from evidently.presets import DataDriftPreset, DataSummaryPreset
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from google.cloud import storage
