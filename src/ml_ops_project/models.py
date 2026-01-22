@@ -14,7 +14,7 @@ The model:
 import hydra
 import pytorch_lightning as pl
 import torch
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 from torchmetrics import Accuracy
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
@@ -46,6 +46,11 @@ class SentimentClassifier(pl.LightningModule):
         optimizer_cfg: DictConfig | None = None,
     ) -> None:
         super().__init__()
+        
+        # Ensure optimizer_cfg is a plain dict for proper serialization/logging
+        if optimizer_cfg and isinstance(optimizer_cfg, DictConfig):
+            optimizer_cfg = OmegaConf.to_container(optimizer_cfg, resolve=True)
+            
         self.optimizer_cfg = optimizer_cfg
 
         # Save hyperparameters to checkpoint for reproducibility and easy loading

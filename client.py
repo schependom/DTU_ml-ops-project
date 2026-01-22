@@ -11,7 +11,7 @@ import requests
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--url", type=str, default="http://localhost:8080/inference")
+    parser.add_argument("--url", type=str, default="https://api-1041875805298.europe-west1.run.app/inference")
     parser.add_argument("--wait_time", type=int, default=5)
     parser.add_argument("--max_iterations", type=int, default=1000)
     args = parser.parse_args()
