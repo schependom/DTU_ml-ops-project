@@ -445,7 +445,12 @@ Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with S
 >
 > Answer:
 
-Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three Docker images: `api` for our production FastAPI inference service, `ml-ops-proj-instance` which was used for initial development, and `monitoring` for drift detection. These images are built and pushed via Cloud Build as part of our CI/CD pipeline.
+Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three 'groups' of Docker images, each with multiple versions:
+- `api`: The Docker image for our production FastAPI **inference service**.
+- `monitoring`: The Docker image for our **drift detection** service.
+- `ml-ops-proj-instance`: The environment image used for running **Vertex AI training jobs**.
+
+The `ml-ops-proj-instance` image is the one built and pushed automatically via **Cloud Build** as part of our `release` CI/CD pipeline (to ensure training jobs always use the latest code/dependencies). The `api` and `monitoring` images were built manually via the `gcloud` CLI (e.g. `gcloud builds submit`) during the deployment phase.
 
 ![GCP Artifact Registry](figures/registry.jpg)
 
@@ -455,7 +460,7 @@ Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores t
 >
 > Answer:
 
-Our Cloud Build history shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the configuration.
+Our Cloud Build history (see figure below) shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Some builds are triggerd by the continuous release GitHub workflow (where the the training image is built to be used by Vertex AI), while other builds were submitted manually for deployment to the `/predict` and `/monitoring` API endpoints on Cloud Run. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the automatic/manual trigger and specific configurations.
 
 ![GCP Cloud Build history](figures/cloud_build.jpg)
 
