@@ -26,7 +26,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 - [x] **Q12**: Experiment configuration (config files) + example commands
 - [x] **Q13**: Reproducibility: how runs are tracked and reproducible
-- [...] **Q14**: W&B screenshots + which metrics you track and why
+- [x] **Q14**: W&B screenshots + which metrics you track and why
 - [x] **Q15**: Docker usage + how to run images + link to a Dockerfile
 - [x] **Q16**: Debugging approach + profiling (or why not)
 
@@ -34,7 +34,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 - [...] **Q17**: GCP services used + short explanation of each
 - [ ] **Q18**: Compute Engine usage + VM types
-- [ ] **Q19**: GCP bucket screenshots (stored data)
+- [x] **Q19**: GCP bucket screenshots (stored data)
 - [ ] **Q20**: Artifact Registry screenshots (docker images)
 - [ ] **Q21**: Cloud Build history screenshots
 - [ ] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
