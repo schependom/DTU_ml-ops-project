@@ -413,7 +413,7 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 - **Cloud Storage**: Used to store our data and models for DVC.
 - **Cloud Build**: Used to build our docker images.
 - **Artifact Registry**: Used to store our docker images.
-- **Cloud Run**: TODO
+- **Cloud Run**: Used to deploy our API and monitoring service, via the corresponding Docker images.
 - **Vertex AI**: Used for running cloud training jobs.
 
 ### Question 18
@@ -427,7 +427,12 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 >
 > Answer:
 
---- question 18 fill here ---
+We did **not** manually create VMs to connect to them via SSH, clone the repo, set up Python, dependencies, etc. Instead, we **indirectly** utilized the Compute Engine infrastructure through **Vertex AI** and **Cloud Run**:
+
+1.  **Vertex AI Training**: When we submit a custom training job, Vertex AI provisions `n1-standard-4` instances with **NVIDIA T4 GPUs** behind the scenes to execute our containerized training script.
+2.  **Cloud Run**: Our API runs on serverless container instances which are also powered by the underlying Compute Engine infrastructure, scaling automatically based on request traffic.
+
+Using Vertex AI and Cloud Run reduces the overhead of manually managing VMs.
 
 ### Question 19
 
@@ -445,7 +450,13 @@ Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with S
 >
 > Answer:
 
-Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three Docker images: `api` for our production FastAPI inference service, `ml-ops-proj-instance` which was used for initial development, and `monitoring` for drift detection. These images are built and pushed via Cloud Build as part of our CI/CD pipeline.
+Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three 'groups' of Docker images, each with multiple versions:
+
+- `api`: The Docker image for our production FastAPI **inference service**.
+- `monitoring`: The Docker image for our **drift detection** service.
+- `ml-ops-proj-instance`: The environment image used for running **Vertex AI training jobs**.
+
+The `ml-ops-proj-instance` image is the one built and pushed automatically via **Cloud Build** as part of our `release` CI/CD pipeline (to ensure training jobs always use the latest code/dependencies). The `api` and `monitoring` images were built manually via the `gcloud` CLI (e.g. `gcloud builds submit`) during the deployment phase.
 
 ![GCP Artifact Registry](figures/registry.jpg)
 
@@ -455,7 +466,7 @@ Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores t
 >
 > Answer:
 
-Our Cloud Build history shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the configuration.
+Our Cloud Build history (see figure below) shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Some builds are triggerd by the continuous release GitHub workflow (where the the training image is built to be used by Vertex AI), while other builds were submitted manually for deployment to the `/predict` and `/monitoring` API endpoints on Cloud Run. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the automatic/manual trigger and specific configurations.
 
 ![GCP Cloud Build history](figures/cloud_build.jpg)
 
@@ -470,7 +481,21 @@ Our Cloud Build history shows numerous builds executed during development. Most 
 >
 > Answer:
 
---- question 22 fill here ---
+We successfully trained our model in the cloud using **Vertex AI**.
+
+We automated this process with a CI/CD pipeline using **GitHub Actions** (specified in `.github/workflows/gcp.yaml`). When code is merged into the `release` branch, our workflow:
+
+1.  Builds a Docker image using `dockerfiles/cloud.dockerfile` (as defined in `GCP/cloudbuild.yaml`), which captures our exact Python environment.
+2.  Pushes this image to the **Google Artifact Registry**.
+3.  Submits a **Vertex AI Custom Job** using the configuration in `GCP/vertex_ai_train.yaml`.
+
+The training job runs our `src/ml_ops_project/train.py` script on a managed worker node (using `n1-standard-4` with `NVIDIA_TESLA_T4` GPUs as defined in our `configs/GCP/config_gpu.yaml` config file). It pulls data from our GCS bucket (via DVC) and logs all metrics and artifacts to **Weights & Biases**, enabling us to monitor cloud training progress in real-time. If the model training leads to a better model than the previous one, the new model is promoted to the WandB model registry with the alias `inference`.
+
+We chose Vertex AI over the raw Compute Engine because it is a _managed_ service that automatically handles infrastructure provisioning, driver installation, and -- crucially -- shutdown of expensive GPU resources after the job completes, which avoids accidental costs and waste of our limited GCP credits.
+
+![Vertex AI training job](figures/vertexAI.jpg)
+
+Note that in the training job above, we limited the number of epochs to `max_epochs=1` such that the training completed in less than 2 minutes. This is only for the purpose of this report and should not be used in production, of course.
 
 ## Deployment
 
@@ -529,7 +554,8 @@ Or on windows (if you haven't installed curl):
 
 We performed API tests using `pytest` and FastAPI’s `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
 
-We have not performed load testing yet. To do so, we would follow the course recommendation and use `locust`, define a `tests/performancetests/locustfile.py` that exercises `/inference` and `/metrics`, and then run Locust headless against the local or Cloud Run endpoint. The metrics we would report are average response time, 99th percentile latency, and requests per second, plus the highest sustained user load before errors or timeouts appear.
+For load testing, we used locust to simulate the user traffic for both our local API and our deployed Cloud Run endpoint. We defined a locustfile.py with two tasks, a get_root task and a weighted post_inference task that sends JSON payloads containing a statement key to the '/inference' endpoint.
+Our results from the Cloud Run showed a stable performance with 0.5 requests per second per user and a failure rate of approximately 21%. (figures/Locust.png)
 
 ### Question 26
 
@@ -572,7 +598,14 @@ We have not performed load testing yet. To do so, we would follow the course rec
 >
 > Answer:
 
---- question 28 fill here ---
+We built a **drift detection service** deployed as a separate Cloud Run endpoint (`/monitoring`). This service compares the distribution of incoming inference requests against our training data to detect data drift. When the input distribution shifts significantly from what the model was trained on, it signals that model performance may degrade and retraining might be needed. This closes the MLOps feedback loop by connecting production data back to model development.
+
+We also implemented **GCP alert systems** that notify us when our cloud application experiences issues. As shown in the images below, we configured alerts to trigger when end-to-end latency exceeds 300ms. The alert interface (right) shows a latency spike that triggered the threshold. These notifications are forwarded to email and even smartwatch (left), ensuring we are immediately aware of production issues.
+
+<p float="left">
+  <img src="figures/alert_watch.jpg" width="30%" />
+  <img src="figures/alerts_interface.png" width="68%" />
+</p>
 
 ### Question 29
 
@@ -599,19 +632,6 @@ For **training**, merging a PR to the `release` branch triggers Cloud Build to c
 **Deployment** uses Cloud Run to host our FastAPI application with two main endpoints: `/inference` for predictions and `/monitoring` for data drift detection. When a **user** sends a request to the `/inference` endpoint, the API fetches the best model from the W&B Registry and returns a sentiment prediction. The `/monitoring` endpoint allows us to detect data drift by comparing incoming data distributions against the training data.
 
 This architecture enables continuous integration, automated training, experiment tracking, and production deployment while maintaining reproducibility through DVC and comprehensive monitoring through W&B and our drift detection API.
-The diagram below illustrates our end-to-end MLOps pipeline, bridging local development with cloud execution on GCP.
-1.  **Data Ingestion**: We fetch the Rotten Tomatoes dataset from **Hugging Face**, preprocess it, and store the versioned artifacts in a **GCS Bucket** using **DVC**.
-2.  **Local Development**: Developers clone the repo from **GitHub**. They can run local training (logging to **WandB** Projects) or run hyperparameter **Sweeps**.
-3.  **CI/CD Pipeline**: 
-    - On every push, **GitHub Actions** triggers linting (`ruff`) and unit tests (`pytest`).
-    - On a merge to the `release` branch, Actions builds the Docker image and pushes it to Artifact Registry.
-    - It then triggers a **Vertex AI** training job.
-4.  **Training & Evaluation**: Vertex AI pulls the data (via DVC/GCS) and the Docker image. It trains the model, logging metrics and artifacts to **WandB**. 
-5.  **Model Registry & Promotion**: If the trained model is the best one, it is promoted to the **WandB Model Registry**.
-6.  **Deployment**: The pipeline triggers a **Cloud Run** update. The API service pulls the latest "production" model artifact from WandB during startup.
-7.  **Inference & Monitoring**: Users send requests to the **API**. Predictions and feedback are logged for **Drift Detection**, closing the feedback loop.
-
-![MLOps Architecture Overview](figures/overview.jpg)
 
 ### Question 30
 
@@ -624,7 +644,13 @@ The diagram below illustrates our end-to-end MLOps pipeline, bridging local deve
 >
 > Answer:
 
---- question 30 fill here ---
+One of the biggest challenges was **deploying our API to Google Cloud Run**. Understanding the error messages from GCP proved difficult—they were often cryptic and required significant debugging to interpret. Issues ranged from authentication problems with service accounts to container configuration mismatches. We overcame this by carefully reading the Cloud Build logs, testing containers locally before deploying, and iteratively fixing issues one at a time until the API was fully operational.
+
+**Writing comprehensive tests** to achieve sufficient code coverage was another time-consuming task. It wasn't just about writing tests, but writing the _right_ tests that meaningfully validated our code paths. We had to balance unit tests for individual functions with integration tests for the API endpoints. Getting the coverage percentage up required identifying untested edge cases and ensuring our test data was representative of real-world inputs.
+
+**Getting continuous integration to pass consistently** required substantial bug fixing. Our GitHub Actions workflows would fail for various reasons: dependency conflicts between environments, flaky tests that passed locally but failed in CI, and authentication issues when accessing GCP resources from the CI environment. We addressed these by adding proper caching, ensuring environment parity between local and CI setups, and using our custom GitHub Actions for consistent Python and GCP setup across workflows.
+
+Additionally, integrating multiple services—DVC, W&B, GCP, and GitHub Actions—meant dealing with authentication and configuration across all of them. Each service had its own way of handling secrets and credentials, and making them work together seamlessly took considerable effort. We resolved this by centralizing our GCP authentication through reusable GitHub Actions and carefully managing environment variables and secrets.
 
 ### Question 31
 
@@ -636,4 +662,12 @@ The diagram below illustrates our end-to-end MLOps pipeline, bridging local deve
 > _Student sXXXXXX was in charge of developing of setting up the initial cookie cutter project and developing of the_ > _docker containers for training our applications._ > _Student sXXXXXX was in charge of training our models in the cloud and deploying them afterwards._ > _All members contributed to code by..._ > _We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code._
 > Answer:
 
---- question 31 fill here ---
+**Student s204078** wrote tests and created GitHub Actions workflows. Responsible for code structure including comments, linting setup, and contributed to report questions.
+
+**Student s202186** mainly worked on visualization, tests with pytest, load testing with Locust, and contributed to report questions.
+
+**Student s214631** worked on the API and deployment infrastructure. Set up uv for dependency management, implemented tasks and Hydra configuration, built Dockerfiles, created the FastAPI application, handled cloud deployment, and configured alerts.
+
+**Student s251739** handled most of the Google Cloud Platform setup including CI with GitHub Actions, training pipeline and model implementation with PyTorch Lightning, monitoring for data drift, and containerization in general.
+
+All members contributed to code reviews, debugging, and documentation. We used GitHub Copilot and ChatGPT/Claude to assist with debugging, writing boilerplate code, and answering some questions.

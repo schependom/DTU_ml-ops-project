@@ -37,19 +37,19 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 - [x] **Q19**: GCP bucket screenshots (stored data)
 - [x] **Q20**: Artifact Registry screenshots (docker images)
 - [x] **Q21**: Cloud Build history screenshots
-- [ ] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
+- [x] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
 
 ## Deployment
 
 - [ ] **Q23**: Model API (how you built it / what’s special)
 - [ ] **Q24**: Deployment (local/cloud) + how to invoke the service
-- [x edit if load test is performed] **Q25**: API unit tests + load tests (or how you would do it)
+- [x] **Q25**: API unit tests + load tests (or how you would do it)
 - [ ] **Q26**: Monitoring (how it works / how it would help)
 
 ## Overall discussion of project
 
 - [ ] **Q27**: Credits used + most expensive service + thoughts on cloud
-- [ ] **Q28**: Extra work beyond the other questions (what + why)
+- [x] **Q28**: Extra work beyond the other questions (what + why)
 - [x] **Q29**: Architecture figure + explain the pipeline steps
-- [ ] **Q30**: Biggest struggles + how you overcame them
-- [ ] **Q31**: Individual contributions + how you used generative AI tools
+- [x] **Q30**: Biggest struggles + how you overcame them
+- [x] **Q31**: Individual contributions + how you used generative AI tools
