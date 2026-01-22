@@ -413,7 +413,7 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 - **Cloud Storage**: Used to store our data and models for DVC.
 - **Cloud Build**: Used to build our docker images.
 - **Artifact Registry**: Used to store our docker images.
-- **Cloud Run**: TODO
+- **Cloud Run**: Used to deploy our API and monitoring service, via the corresponding Docker images.
 - **Vertex AI**: Used for running cloud training jobs.
 
 ### Question 18
@@ -427,7 +427,11 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 >
 > Answer:
 
---- question 18 fill here ---
+We did **not** manually create VMs to connect to them via SSH, clone the repo, set up Python, dependencies, etc. Instead, we **indirectly** utilized the Compute Engine infrastructure through **Vertex AI** and **Cloud Run**:
+1.  **Vertex AI Training**: When we submit a custom training job, Vertex AI provisions `n1-standard-4` instances with **NVIDIA T4 GPUs** behind the scenes to execute our containerized training script.
+2.  **Cloud Run**: Our API runs on serverless container instances which are also powered by the underlying Compute Engine infrastructure, scaling automatically based on request traffic.
+
+Using Vertex AI and Cloud Run reduces the overhead of manually managing VMs.
 
 ### Question 19
 
@@ -445,7 +449,12 @@ Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with S
 >
 > Answer:
 
-Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three Docker images: `api` for our production FastAPI inference service, `ml-ops-proj-instance` which was used for initial development, and `monitoring` for drift detection. These images are built and pushed via Cloud Build as part of our CI/CD pipeline.
+Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three 'groups' of Docker images, each with multiple versions:
+- `api`: The Docker image for our production FastAPI **inference service**.
+- `monitoring`: The Docker image for our **drift detection** service.
+- `ml-ops-proj-instance`: The environment image used for running **Vertex AI training jobs**.
+
+The `ml-ops-proj-instance` image is the one built and pushed automatically via **Cloud Build** as part of our `release` CI/CD pipeline (to ensure training jobs always use the latest code/dependencies). The `api` and `monitoring` images were built manually via the `gcloud` CLI (e.g. `gcloud builds submit`) during the deployment phase.
 
 ![GCP Artifact Registry](figures/registry.jpg)
 
@@ -455,7 +464,7 @@ Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores t
 >
 > Answer:
 
-Our Cloud Build history shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the configuration.
+Our Cloud Build history (see figure below) shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Some builds are triggerd by the continuous release GitHub workflow (where the the training image is built to be used by Vertex AI), while other builds were submitted manually for deployment to the `/predict` and `/monitoring` API endpoints on Cloud Run. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the automatic/manual trigger and specific configurations.
 
 ![GCP Cloud Build history](figures/cloud_build.jpg)
 
@@ -526,7 +535,7 @@ Note that in the training job above, we limited the number of epochs to `max_epo
 
 We performed API tests using `pytest` and FastAPI’s `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
 
-For load testing, we used locust to simulate the user traffic for both our local API and our deployed Cloud Run endpoint. We defined a locustfile.py with two tasks, a get_root task and a weighted post_inference task that sends JSON payloads containing a statement key to the '/inference' endpoint.
+For load testing, we used locust to simulate the user traffic for both our local API and our deployed Cloud Run endpoint. We defined a locustfile.py with two tasks, a get_root task and a weighted post_inference task that sends JSON payloads containing a statement key to the `/inference` endpoint.
 Our results from the Cloud Run showed a stable performance with 0.5 requests per second per user and a failure rate of approximately 21%. 
 
 ### Question 26
