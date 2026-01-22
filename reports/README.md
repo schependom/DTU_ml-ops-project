@@ -445,7 +445,7 @@ Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with S
 >
 > Answer:
 
-Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three Docker images: `api` for our FastAPI inference service, `ml-ops-proj-instance` for training, and `monitoring` for drift detection. These images are built and pushed via Cloud Build as part of our CI/CD pipeline.
+Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three Docker images: `api` for our production FastAPI inference service, `ml-ops-proj-instance` which was used for initial development, and `monitoring` for drift detection. These images are built and pushed via Cloud Build as part of our CI/CD pipeline.
 
 ![GCP Artifact Registry](figures/registry.jpg)
 
