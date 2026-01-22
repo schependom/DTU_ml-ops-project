@@ -523,7 +523,7 @@ We chose Vertex AI over the raw Compute Engine because it is a *managed* service
 We performed API tests using `pytest` and FastAPI’s `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
 
 For load testing, we used locust to simulate the user traffic for both our local API and our deployed Cloud Run endpoint. We defined a locustfile.py with two tasks, a get_root task and a weighted post_inference task that sends JSON payloads containing a statement key to the '/inference' endpoint.
-Our results from the Cloud Run showed a stable performance with 0.5 requests per second per user and a failure rate of approximately 21%. 
+Our results from the Cloud Run showed a stable performance with 0.5 requests per second per user and a failure rate of approximately 21%. (figures/Locust.png)
 
 ### Question 26
 
