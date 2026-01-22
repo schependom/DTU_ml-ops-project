@@ -20,5 +20,6 @@
         "zsh": {
             "path": "/bin/zsh"
         }
-    }
+    },
+    "liveServer.settings.port": 5502
 }

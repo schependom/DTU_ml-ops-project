@@ -184,6 +184,18 @@ hydra_logs
 outputs/
 models/*.ckpt
 /wandb
+
+# data is tracked by DVC
 data/
 /data
+
 logs/
+
+# models are tracked by DVC
+/models
+
+/checkpoints
+predictions/
+M24 api testing.md
+/artifacts
+monitoring.html

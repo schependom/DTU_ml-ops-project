@@ -80,9 +80,80 @@ def serve_docs(ctx: Context) -> None:
 #      as being done below:
 #
 @task
-def dvc(ctx, folder="data", message="Add new data"):
+def new_dvc(ctx, folder="data", message="Add new data"):
     ctx.run(f"dvc add {folder}")
     ctx.run(f"git add {folder}.dvc .gitignore")
     ctx.run(f"git commit -m '{message}'")
     ctx.run("git push")
     ctx.run("dvc push")
+
+
+@task
+def dvc(ctx):
+    """Push data changes to remote DVC storage."""
+    ctx.run("git add .")
+    ctx.run('git commit -m "Data update"')
+    ctx.run("git push")
+    ctx.run("dvc push")
+
+
+@task
+def run_local_api(ctx: Context) -> None:
+    """Start FastAPI server. You should call the /inference endpoint."""
+    ctx.run(
+        "uv run uvicorn ml_ops_project.api:app --app-dir src --port 8084",
+        echo=True,
+        pty=not WINDOWS,
+    )
+
+
+@task
+def run_local_monitoring(ctx: Context) -> None:
+    """Start FastAPI server for monitoring reports."""
+    ctx.run(
+        "uv run uvicorn ml_ops_project.monitoring:app --app-dir src --port 8090",
+        echo=True,
+        pty=not WINDOWS,
+    )
+
+
+@task
+def api_container(ctx: Context) -> None:
+    """Run the API server in a Docker container."""
+
+    print("Make sure you have the GCP credentials JSON file ready.")
+    print("You will be prompted to provide the path to this file.")
+    print("Also, make sure your .env file is set up correctly.")
+
+    # Ask user for path to GCP credentials
+    credentials_path = input("Enter the path to your GCP credentials JSON file: ")
+
+    ctx.run(
+        f"docker run --env-file .env -p 8080:8080 --rm "
+        f"-v {credentials_path}:/gcp/creds.json:ro "
+        "-e GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json "
+        "sentiment_api:latest",
+        echo=True,
+        pty=not WINDOWS,
+    )
+
+
+@task
+def monitoring_container(ctx: Context) -> None:
+    """Run the monitoring server in a Docker container."""
+
+    print("Make sure you have the GCP credentials JSON file ready.")
+    print("You will be prompted to provide the path to this file.")
+    print("Also, make sure your .env file is set up correctly.")
+
+    # Ask user for path to GCP credentials
+    credentials_path = input("Enter the path to your GCP credentials JSON file: ")
+
+    ctx.run(
+        f"docker run --env-file .env -p 8090:8090 --rm "
+        f"-v {credentials_path}:/gcp/creds.json:ro "
+        "-e GOOGLE_APPLICATION_CREDENTIALS=/gcp/creds.json "
+        "monitoring_api:latest",
+        echo=True,
+        pty=not WINDOWS,
+    )

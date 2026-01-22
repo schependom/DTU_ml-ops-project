@@ -52,69 +52,69 @@ will check the repositories and the code to verify your answers.
 
 ### Week 1
 
--   [x] Create a git repository (M5)
--   [x] Make sure that all team members have write access to the GitHub repository (M5)
--   [x] Create a dedicated environment for you project to keep track of your packages (M2)
--   [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
--   [x] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
--   [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
--   [x] Remember to either fill out the `requirements.txt`/`requirements_dev.txt` files or keeping your
-        `pyproject.toml`/`uv.lock` up-to-date with whatever dependencies that you are using (M2+M6)
--   [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
--   [x] Do a bit of code typing and remember to document essential parts of your code (M7)
--   [x] Setup version control for your data or part of your data (M8)
--   [x] Add command line interfaces and project commands to your code where it makes sense (M9)
--   [x] Construct one or multiple docker files for your code (M10)
--   [x] Build the docker files locally and make sure they work as intended (M10)
--   [x] Write one or multiple configurations files for your experiments (M11)
--   [x] Used Hydra to load the configurations and manage your hyperparameters (M11)
--   [NO] Use profiling to optimize your code (M12)
--   [x] Use logging to log important events in your code (M14)
--   [x] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
--   [ ] Consider running a hyperparameter optimization sweep (M14)
--   [x] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
+- [x] Create a git repository (M5)
+- [x] Make sure that all team members have write access to the GitHub repository (M5)
+- [x] Create a dedicated environment for you project to keep track of your packages (M2)
+- [x] Create the initial file structure using cookiecutter with an appropriate template (M6)
+- [x] Fill out the `data.py` file such that it downloads whatever data you need and preprocesses it (if necessary) (M6)
+- [x] Add a model to `model.py` and a training procedure to `train.py` and get that running (M6)
+- [x] Remember to either fill out the `requirements.txt`/`requirements_dev.txt` files or keeping your
+      `pyproject.toml`/`uv.lock` up-to-date with whatever dependencies that you are using (M2+M6)
+- [x] Remember to comply with good coding practices (`pep8`) while doing the project (M7)
+- [x] Do a bit of code typing and remember to document essential parts of your code (M7)
+- [x] Setup version control for your data or part of your data (M8)
+- [x] Add command line interfaces and project commands to your code where it makes sense (M9)
+- [x] Construct one or multiple docker files for your code (M10)
+- [x] Build the docker files locally and make sure they work as intended (M10)
+- [x] Write one or multiple configurations files for your experiments (M11)
+- [x] Used Hydra to load the configurations and manage your hyperparameters (M11)
+- [ ] Use profiling to optimize your code (M12)
+- [x] Use logging to log important events in your code (M14)
+- [x] Use Weights & Biases to log training progress and other important metrics/artifacts in your code (M14)
+- [x] Consider running a hyperparameter optimization sweep (M14)
+- [x] Use PyTorch-lightning (if applicable) to reduce the amount of boilerplate in your code (M15)
 
 ### Week 2
 
--   [x] Write unit tests related to the data part of your code (M16)
--   [x] Write unit tests related to model construction and or model training (M16)
--   [x] Calculate the code coverage (M16)
--   [x] Get some continuous integration running on the GitHub repository (M17)
--   [ ] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
--   [x] Add a linting step to your continuous integration (M17)
--   [x] Add pre-commit hooks to your version control setup (M18)
--   [ ] Add a continuous workflow that triggers when data changes (M19)
--   [ ] Add a continuous workflow that triggers when changes to the model registry is made (M19)
--   [x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
--   [ ] Create a trigger workflow for automatically building your docker images (M21)
--   [ ] Get your model training in GCP using either the Engine or Vertex AI (M21)
--   [ ] Create a FastAPI application that can do inference using your model (M22)
--   [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
--   [ ] Write API tests for your application and setup continuous integration for these (M24)
--   [ ] Load test your application (M24)
--   [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
--   [ ] Create a frontend for your API (M26)
+- [x] Write unit tests related to the data part of your code (M16)
+- [x] Write unit tests related to model construction and or model training (M16)
+- [x] Calculate the code coverage (M16)
+- [x] Get some continuous integration running on the GitHub repository (M17)
+- [x] Add caching and multi-os/python/pytorch testing to your continuous integration (M17)
+- [x] Add a linting step to your continuous integration (M17)
+- [x] Add pre-commit hooks to your version control setup (M18)
+- [ ] Add a continuous workflow that triggers when data changes (M19)
+- [ ] Add a continuous workflow that triggers when changes to the model registry is made (M19)
+- [x] Create a data storage in GCP Bucket for your data and link this with your data version control setup (M21)
+- [ ] Create a trigger workflow for automatically building your docker images (M21)
+- [x] Get your model training in GCP using either the Engine or Vertex AI (M21)
+- [x] Create a FastAPI application that can do inference using your model (M22)
+- [x] Deploy your model in GCP using either Functions or Run as the backend (M23)
+- [x] Write API tests for your application and setup continuous integration for these (M24)
+- [x] Load test your application (M24)
+- [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
+- [ ] Create a frontend for your API (M26)
 
 ### Week 3
 
--   [ ] Check how robust your model is towards data drifting (M27)
--   [ ] Setup collection of input-output data from your deployed application (M27)
--   [ ] Deploy to the cloud a drift detection API (M27)
--   [ ] Instrument your API with a couple of system metrics (M28)
--   [ ] Setup cloud monitoring of your instrumented application (M28)
--   [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
--   [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
--   [ ] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
--   [ ] Play around with quantization, compilation and pruning for your trained models to increase inference speed (M31)
+- [x] Check how robust your model is towards data drifting (M27)
+- [x] Setup collection of input-output data from your deployed application (M27)
+- [x] Deploy to the cloud a drift detection API (M27)
+- [x] Instrument your API with a couple of system metrics (M28)
+- [ ] Setup cloud monitoring of your instrumented application (M28)
+- [x] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
+- [x] If applicable, optimize the performance of your data loading using distributed data loading (M29)
+- [x] If applicable, optimize the performance of your training pipeline by using distributed training (M30)
+- [ ] Play around with quantization, compilation and pruning for your trained models to increase inference speed (M31)
 
 ### Extra
 
--   [ ] Write some documentation for your application (M32)
--   [ ] Publish the documentation to GitHub Pages (M32)
--   [ ] Revisit your initial project description. Did the project turn out as you wanted?
--   [ ] Create an architectural diagram over your MLOps pipeline
--   [ ] Make sure all group members have an understanding about all parts of the project
--   [ ] Uploaded all your code to GitHub
+- [ ] Write some documentation for your application (M32)
+- [ ] Publish the documentation to GitHub Pages (M32)
+- [ ] Revisit your initial project description. Did the project turn out as you wanted?
+- [ ] Create an architectural diagram over your MLOps pipeline
+- [ ] Make sure all group members have an understanding about all parts of the project
+- [ ] Uploaded all your code to GitHub
 
 ## Group information
 
@@ -149,7 +149,7 @@ s214631, s204078, s202186, s251739
 >
 > Answer:
 
-We leveraged **Transfer Learning** by using the Hugging Face ecosystem to fine-tune a pre-trained DistilBERT model for sentiment classification. Specifically, `transformers` allowed us to load the pre-trained `distilbert-base-uncased` weights (trained on a massive corpus) and adapt them to our specific task using `AutoModelForSequenceClassification`. This approach meant we started with a model that already "understood" language, rather than training from scratch. We used `datasets` to fetch the Rotten Tomatoes dataset and PyTorch Lightning to structure the training loop. These tools combined gave us a high-quality NLP baseline with minimal boilerplate, allowing us to focus on the MLOps pipeline.
+We did **Transfer Learning** by using the Hugging Face ecosystem to fine-tune a pre-trained `DistilBERT` model for (Rotten Tomatoes movie) sentiment classification. Specifically, `transformers` allowed us to load the pre-trained `distilbert-base-uncased` weights (trained on a massive corpus) and adapt them to our specific task using `AutoModelForSequenceClassification`. This approach meant we started with a model that already "understood" language, rather than training from scratch. We used `datasets` to fetch the Rotten Tomatoes dataset from Hugging Face and **PyTorch Lightning** for the implementation of the `SentimentClassifier` model, the `RottenTomatoesDataModule` and training/evaluation logic. These tools combined gave us a high-quality NLP baseline with minimal boilerplate, allowing us to focus on the MLOps pipeline.
 
 ## Coding environment
 
@@ -195,7 +195,7 @@ We initialized the repository from the `DTU_ml-ops-template` cookiecutter and ke
 >
 > Answer:
 
-We used `ruff` for both linting, as well as for formatting. We also used `ty` for typing (TODO: documentation??) These concepts are important in larger projects because they help catch errors early and make code more maintainable. For example, typing helps catch errors at compile time, while linting and formatting help keep code consistent and readable.
+We used `ruff` for both linting and formatting, ensuring code was consistent and met style standards automatically. For typing, we adopted [`ty`](https://docs.astral.sh/ty/) to enforce static type checking across our codebase. These concepts are important in larger projects because they help catch errors early and make the codebase more maintainable. For example, type checking with `ty` helps identify type-related errors before running the code, while linting and formatting tools keep contributions clean and readable, making collaboration easier.
 
 The corresponding `ruff` and `ty` VS Code extensions really helped to catch these errors early on such that we didn't had to only rely on `pre-commit`.
 
@@ -217,7 +217,7 @@ Talking about `pre-commit`, we used [pre-commit.ci](https://pre-commit.ci/) to a
 >
 > Answer:
 
-In total we have implemented 7 tests (so far!!). We primarily test the `RottenTomatoesDataModule` to ensure that all dataset splits (train, validation, test) load correctly and that the DataCollator produces tensors with the proper types and matching sequence lengths. We also check the `SentimentClassifier`’s forward pass using multiple batch sizes and an overfit test to confirm correctness. Lastly, we validate that labels are strictly binary and check WandB connectivity.
+In total we have implemented 19 unit tests (20 test cases including parametrization). The tests cover our full pipeline: the `RottenTomatoesDataModule` (dataset splits exist, dataloader batch shapes/dtypes, padding consistency, and binary labels), the `SentimentClassifier` (forward-pass logits/loss, train/val/test steps, and optimizer construction), training orchestration (that `train()` calls `fit()`/`test()` and handles WandB enabled/disabled and sweep vs non-sweep setup), and evaluation logic (selecting an explicit checkpoint vs the newest checkpoint in a directory and raising clear errors when missing).
 
 ### Question 8
 
@@ -230,7 +230,7 @@ In total we have implemented 7 tests (so far!!). We primarily test the `RottenTo
 >
 > Answer:
 
---- question 8 fill here ---
+Our total code coverage is **70.78%**. This gives reasonable confidence that core paths in our data module, model, and the training/evaluation entry points execute as expected, and that key failure modes (e.g., missing checkpoints, WandB disabled/misconfigured) are handled. However, even with 100% (or near-100%) line coverage, we would not trust the system to be error free. Coverage only shows that lines were executed, not that they were exercised with the right assertions, realistic inputs, or critical edge cases. It also does not guarantee correct behavior across different environments (GPU/CPU, OS differences), external dependencies (WandB/network), or realistic data conditions (distribution shifts, unexpected text lengths, corrupted caches). For ML systems, correctness additionally depends on data quality and non-determinism. We therefore treat coverage as one signal, complemented by stronger assertions, integration tests, and manual review.
 
 ### Question 9
 
@@ -243,7 +243,7 @@ In total we have implemented 7 tests (so far!!). We primarily test the `RottenTo
 >
 > Answer:
 
---- question 9 fill here ---
+We used branches primarily for implementing larger features that affected multiple parts of our workflow. For smaller, isolated changes, we committed directly to main. Additionally, we maintained a dedicated `release` branch for triggering our GCP deployment pipeline (as described in more detail in Question 11). This setup allowed us to avoid unnecessary cloud costs by only running expensive training jobs when code was explicitly pushed or merged to `release`. Pull requests were used when merging feature branches into main, providing an opportunity for code review and ensuring that CI checks passed before integration. This branching strategy struck a balance between overhead and safety: small fixes could land quickly, while larger changes received proper review and testing before merging.
 
 ### Question 10
 
@@ -256,7 +256,7 @@ In total we have implemented 7 tests (so far!!). We primarily test the `RottenTo
 >
 > Answer:
 
-We used created a Google Cloud Platform (GCP) bucket to store our (??). We then used `dvc` to version control these files. TODO: what happens when doing a cloud run? We mount the `gcs/...` directory as a volume!
+We used a Google Cloud Platform (GCP) bucket to store our data artifacts, specifically the preprocessed Rotten Tomatoes dataset and model checkpoints. We then used `dvc` (Data Version Control) to version control these files, enabling us to reliably access the correct versions of data and models across development environments and during CI/CD runs. In our cloud workflows—such as when deploying with Cloud Run—we configured the pipeline to access the GCP bucket using service account authentication (set up in GitHub Actions). The required files are automatically pulled from the bucket using `dvc pull` as part of the deployment or job start-up, ensuring consistency between local and cloud environments. This setup meant that data changes and model versions were tracked and reproducible, and team members could collaborate without manual data transfers or risk of mismatched datasets.
 
 ### Question 11
 
@@ -274,23 +274,24 @@ Because we noticed that -- while writing the GitHub Actions workflows -- we had 
 With regards to the actual workflows themselves (which are stored in `.github/workflows/`), we have the following:
 
 - `gcp.yaml`:
-  - On push or merge request to the 'release' branch:
-    - run tests with `pytest`
-    - if tests pass, continue (`needs: test`)
-    - build `GCP/cloud.dockerfile` into a container image
-    - push the container image to GCP Artifact Registry
-    - trigger a Vertex AI training job using `GCP/vertex_ai_train.yaml` (which uses the container image built above)
-    - stop GCP instance
-  - The reason we only run this workflow on the 'release' branch is to avoid spending a bunch of GCP credits.
+    - On push or merge request to the 'release' branch:
+        - run tests with `pytest`
+        - if tests pass, continue (`needs: test`)
+        - build `GCP/cloud.dockerfile` into a container image
+        - push the container image to GCP Artifact Registry
+        - trigger a Vertex AI training job using `GCP/vertex_ai_train.yaml` (which uses the container image built above)
+        - stop GCP instance
+    - The reason we only run this workflow on the 'release' branch is to avoid spending a bunch of GCP credits.
 - `linting.yaml`:
-   - Runs `ruff check` and `ruff format`.
+    - Runs `ruff check` and `ruff format`.
 - `pre-commit-update.yaml`:
-   - Updates the pre-commit hooks (since Dependabot does not support this for `uv` yet).
+    - Updates the pre-commit hooks (since Dependabot does not support this for `uv` yet).
 - `tests.yaml`:
-   - Runs `pytest` with coverage, after it has pulled the necesseary files from the GCP bucket with `uv run dvc pull`.
-We use GitHub Actions for continuous integration to automatically validate every push. The workflow primarily focuses on unit testing with `pytest` and code coverage, ensuring that core functionality stays stable as the codebase evolves.
+    - Runs `pytest` with coverage, after it has pulled the necesseary files from the GCP bucket with `uv run dvc pull`.
+      We use GitHub Actions for continuous integration to automatically validate every push. The workflow primarily focuses on unit testing with `pytest` and code coverage, ensuring that core functionality stays stable as the codebase evolves.
 
 Our unit tests cover the main components of the ML pipeline:
+
 - **Data pipeline tests**: verify the Rotten Tomatoes datamodule produces the expected splits (`train/validation/test`), and that each dataloader yields batches with correct keys, shapes, and dtypes (e.g., `input_ids`, `attention_mask`, `labels`).
 - **Model tests**: smoke-test the model forward pass on synthetic batches (different batch sizes/sequence lengths) and verify that training/validation/test steps return a scalar loss and that optimizer configuration returns a valid PyTorch optimizer.
 - **Evaluation logic tests**: validate checkpoint selection logic (use explicit checkpoint path, pick the newest checkpoint in a directory, and raise informative errors when checkpoints are missing).
@@ -316,7 +317,7 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 12 fill here ---
+We configured our experiments using Hydra which allows for a modular and hierarchical configuration system. Instead of hardcoding parameters, we use YAML files to manage model architectures, training hyperparameters, and logging. This structure makes it easy to swap different components, such as changing the optimizer from Adam to Nesterov SGD, by updating a configuration reference or using a command line override.
 
 ### Question 13
 
@@ -329,7 +330,7 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 13 fill here ---
+We ensured experiment reproducibility by making the full run configuration and artifacts traceable and recoverable. Experiments are configured with Hydra (`configs/`) and we seed all RNGs at the start of training (`pl.seed_everything(cfg.training.seed)`), so data shuffling and training behavior are deterministic as far as the stack allows. For each run we initialize Weights & Biases with the _entire resolved Hydra config_ (`wandb.init(config=OmegaConf.to_container(cfg, resolve=True))`), meaning all hyperparameters and overrides (model name, optimizer settings like lr/weight decay/betas, batch size, etc.) are stored alongside metrics and run metadata (tags/notes). We also checkpoint the best model based on validation accuracy and, when W&B is enabled, upload checkpoints as W&B Artifacts (`log_model="all"`), so the exact weights can be retrieved later. Finally, dependency versions are pinned via `uv.lock`/`pyproject.toml`, and our dataset is versioned with DVC (stored in a GCP bucket), so rerunning the same code + data + config reproduces the experiment.
 
 ### Question 14
 
@@ -342,15 +343,20 @@ The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, 
 >
 > Answer:
 
---- question 14 fill here ---
-
 In our training script (`src/ml_ops_project/train.py`) we use a `WandbLogger` to track the key metrics emitted by the Lightning model during training and evaluation (defined in `src/ml_ops_project/models.py`). We log **loss** and **accuracy** for training, validation, and test so we can monitor optimization progress and generalization.
 
 In the screenshot below, training loss decreases while training accuracy increases, which indicates the model is learning the sentiment classification task. The validation curves provide a signal of generalization: validation loss rises and validation accuracy drops toward the end, suggesting that overfitting might be happening. Finally, the single test loss/accuracy points summarize the final performance on held-out data using the best checkpoint selected during training.
 
 ![W&B experiment metrics (loss/accuracy curves)](figures/Wandb%20shot.png)
 
-<span style="color: blue;">*Add more about sweeps and stuff*</span>
+We also used W&B Sweeps for hyperparameter optimization. The sweep dashboard below shows five runs exploring different configurations, tracking validation loss, validation accuracy, and training metrics over training steps. We can see that different hyperparameter combinations lead to varying convergence behavior—some runs achieve lower validation loss more quickly, while others plateau or show signs of overfitting.
+
+The parallel coordinates plot (right) visualizes how our swept hyperparameters—learning rate (`optimizer.lr`) and batch size (`training.batch_size`)—affect validation loss. Lower validation loss (lighter colors) appears to correlate with learning rates around 1e-4 to 2e-4 and batch sizes of 128. This visualization helped us identify promising hyperparameter regions which could be used to select the best hyperparameters for the final model.
+
+<p float="left">
+  <img src="figures/sweep.jpg" width="49%" />
+  <img src="figures/sweep_opt.jpg" width="49%" />
+</p>
 
 ### Question 15
 
@@ -363,7 +369,16 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 15 fill here ---
+We used Docker to make our ML pipeline **reproducible and deployable** across laptops and GCP. We created separate images for **training** (`dockerfiles/train.dockerfile`) and **evaluation** (`dockerfiles/evaluate.dockerfile`) using an `uv`-based Python image and `uv.lock`, so the container captures OS-level dependencies and a fully pinned Python environment. This makes our experiments run the same way locally, in CI, and in Cloud Build.
+
+For training we build and run the container and pass Hydra overrides at runtime:
+`docker build -f dockerfiles/train.dockerfile . -t train:latest`
+`docker run --rm -v "$(pwd)/models:/models" -e WANDB_API_KEY=$WANDB_API_KEY train:latest training.max_epochs=3 training.batch_size=32 optimizer.lr=1e-3`
+Mounting `models/` lets checkpoints persist on the host.
+
+For deployment we also prepared lightweight API/monitoring images (`dockerfiles/api.dockerfile`, `dockerfiles/monitoring.dockerfile`) that start a FastAPI service on port 8080 (Cloud Run compatible).
+
+Link to Dockerfile: [`dockerfiles/train.dockerfile`](../dockerfiles/train.dockerfile)
 
 ### Question 16
 
@@ -376,7 +391,9 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 16 fill here ---
+Our debugging method was multi-layered beginning with unit testing. We used pytest to verify our data loading and model outputs before running full training cycles. When runtime errors occurred, we used the interactive debugger in VS Code within our DevContainer environment to step through the code and inspect this. We also heavily relied on Hydra’s logging and the multirun flag to identify if bugs were tied to specific hyperparameter configurations.
+
+Regarding profiling, we did not find it necessary to implement custom profiling tools because we used PyTorch Lightning. The framework provides built in profilers that automatically track training bottlenecks and "time per step" metrics. Since our current model based on DistilBERT is already optimized for efficiency, and our resource utilization remained within acceptable bounds on GCP, we prioritized code correctness and reproducibility over further manual performance tuning.
 
 ## Working in the cloud
 
@@ -418,7 +435,9 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 19 fill here ---
+Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with Standard storage class. It contains three main folders: `data/` for training datasets, `files/` for model artifacts and checkpoints, and `predictions/` for storing inference outputs from our API.
+
+![GCS bucket overview](figures/19gcs_bucket.jpg)
 
 ### Question 20
 
@@ -426,7 +445,9 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 20 fill here ---
+Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores three Docker images: `api` for our production FastAPI inference service, `ml-ops-proj-instance` which was used for initial development, and `monitoring` for drift detection. These images are built and pushed via Cloud Build as part of our CI/CD pipeline.
+
+![GCP Artifact Registry](figures/registry.jpg)
 
 ### Question 21
 
@@ -434,7 +455,9 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 21 fill here ---
+Our Cloud Build history shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the configuration.
+
+![GCP Cloud Build history](figures/cloud_build.jpg)
 
 ### Question 22
 
@@ -488,7 +511,9 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 25 fill here ---
+We performed API tests using `pytest` and FastAPI’s `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
+
+We have not performed load testing yet. To do so, we would follow the course recommendation and use `locust`, define a `tests/performancetests/locustfile.py` that exercises `/inference` and `/metrics`, and then run Locust headless against the local or Cloud Run endpoint. The metrics we would report are average response time, 99th percentile latency, and requests per second, plus the highest sustained user load before errors or timeouts appear.
 
 ### Question 26
 
@@ -545,7 +570,32 @@ In the screenshot below, training loss decreases while training accuracy increas
 >
 > Answer:
 
---- question 29 fill here ---
+![System architecture overview](figures/workflow.jpg)
+
+The diagram illustrates our end-to-end MLOps pipeline. **Data ingestion** starts with the Hugging Face dataset, which is preprocessed and stored in GCS with DVC handling version control.
+
+**Development** begins on the local machine where developers clone the repository from GitHub. Pre-commit hooks enforce code quality before each commit. When code is pushed, **GitHub Actions** triggers our CI/CD pipeline, running linting and pytest to validate changes.
+
+For **training**, merging a PR to the `release` branch triggers Cloud Build to create a Docker image and push it to Artifact Registry. This image is then used by Vertex AI to run training jobs in the cloud. Developers can also run local training and hyperparameter sweeps. All training runs log metrics and artifacts to the **W&B Project**, enabling experiment tracking and comparison.
+
+**Model management** is handled through W&B Registry. After training, the best model is promoted to the registry based on validation metrics. The system checks if a newly trained model outperforms the current best before promotion.
+
+**Deployment** uses Cloud Run to host our FastAPI application with two main endpoints: `/inference` for predictions and `/monitoring` for data drift detection. When a **user** sends a request to the `/inference` endpoint, the API fetches the best model from the W&B Registry and returns a sentiment prediction. The `/monitoring` endpoint allows us to detect data drift by comparing incoming data distributions against the training data.
+
+This architecture enables continuous integration, automated training, experiment tracking, and production deployment while maintaining reproducibility through DVC and comprehensive monitoring through W&B and our drift detection API.
+The diagram below illustrates our end-to-end MLOps pipeline, bridging local development with cloud execution on GCP.
+1.  **Data Ingestion**: We fetch the Rotten Tomatoes dataset from **Hugging Face**, preprocess it, and store the versioned artifacts in a **GCS Bucket** using **DVC**.
+2.  **Local Development**: Developers clone the repo from **GitHub**. They can run local training (logging to **WandB** Projects) or run hyperparameter **Sweeps**.
+3.  **CI/CD Pipeline**: 
+    - On every push, **GitHub Actions** triggers linting (`ruff`) and unit tests (`pytest`).
+    - On a merge to the `release` branch, Actions builds the Docker image and pushes it to Artifact Registry.
+    - It then triggers a **Vertex AI** training job.
+4.  **Training & Evaluation**: Vertex AI pulls the data (via DVC/GCS) and the Docker image. It trains the model, logging metrics and artifacts to **WandB**. 
+5.  **Model Registry & Promotion**: If the trained model is the best one, it is promoted to the **WandB Model Registry**.
+6.  **Deployment**: The pipeline triggers a **Cloud Run** update. The API service pulls the latest "production" model artifact from WandB during startup.
+7.  **Inference & Monitoring**: Users send requests to the **API**. Predictions and feedback are logged for **Drift Detection**, closing the feedback loop.
+
+![MLOps Architecture Overview](figures/overview.jpg)
 
 ### Question 30
 

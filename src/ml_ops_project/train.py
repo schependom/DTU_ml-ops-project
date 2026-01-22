@@ -12,14 +12,17 @@ Usage:
 """
 
 import os
+import typing
 
 import hydra
 import pytorch_lightning as pl
+import torch
 from dotenv import load_dotenv
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
+import omegaconf
 
 import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
@@ -32,6 +35,16 @@ load_dotenv()
 # Configure file-based logging: main log + alerts-only log for warnings/errors
 logger.add("logs/train.log", rotation="500 MB")
 logger.add("logs/train_alerts.log", level="WARNING", rotation="500 MB")
+
+# Add OmegaConf types to the safe globals list
+torch.serialization.add_safe_globals([
+    omegaconf.base.ContainerMetadata, 
+    omegaconf.base.Metadata,
+    omegaconf.nodes.AnyNode,
+    DictConfig, 
+    OmegaConf,
+    typing.Any
+])
 
 
 def setup_wandb(cfg: DictConfig) -> bool:
@@ -101,6 +114,15 @@ def train(cfg: DictConfig) -> None:
     # Seed all RNGs (Python, NumPy, PyTorch) for reproducible experiments
     pl.seed_everything(cfg.training.seed)
 
+    # Log the device being used
+    if torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
+        device = "mps"
+    else:
+        device = "cpu"
+    logger.info(f"Training on device: {device}")
+
     # --- W&B Logger Setup ---
     using_wandb = setup_wandb(cfg)
     if using_wandb:
@@ -132,16 +154,25 @@ def train(cfg: DictConfig) -> None:
     logger.info(f"Configuring model: {cfg.model.name}, with optimizer: {cfg.optimizer}")
     model = SentimentClassifier(model_name=cfg.model.name, optimizer_cfg=cfg.optimizer)
 
+    run_id = wandb.run.id if wandb.run else "default"
+
+    # Remove the leading / from the second argument
+    checkpoint_dir = os.path.join(cfg.training.checkpoint_dir, "run_" + run_id)
+
+    logger.info(f"Checkpoint directory: {checkpoint_dir}")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
     # --- Callbacks ---
     # Callbacks are hooks that execute at specific points in the training loop.
     callbacks = [
         # ModelCheckpoint: saves model weights when monitored metric improves
         ModelCheckpoint(
-            dirpath=cfg.training.checkpoint_dir,
+            dirpath=checkpoint_dir,
             filename="{epoch:02d}-{val_accuracy:.3f}",
             monitor="val_accuracy",
             mode="max",  # higher accuracy is better
             save_top_k=1,  # keep only the single best checkpoint
+            save_weights_only=True,  # Only save model weights (no optimizer state)
         ),
         # EarlyStopping: halts training if metric doesn't improve for `patience` epochs
         EarlyStopping(
@@ -158,7 +189,7 @@ def train(cfg: DictConfig) -> None:
     trainer = pl.Trainer(
         max_epochs=cfg.training.max_epochs,
         accelerator="auto",  # auto-select GPU/CPU/TPU
-        devices=1,
+        devices="auto",
         logger=[loguru_adapter, wandb_logger],
         default_root_dir="hydra_logs",
         callbacks=callbacks,
@@ -191,11 +222,49 @@ def train(cfg: DictConfig) -> None:
                 logger.error(f"Parent directory {parent_dir} does not exist!")
 
     trainer.test(model=model, datamodule=data_module, ckpt_path="best")
-    logger.success("Done!")
 
     # Finalize W&B run after all logging is complete (fit + test)
     if wandb_logger is not None:
         wandb.finish()
+        
+        # --- Automated Model Promotion & Deployment ---
+        # Only run this if we are using W&B and on the main process
+        if run_id != "default":
+            try:
+                from ml_ops_project.promote_best_model import promote_best_model, trigger_cloud_run_redeployment
+                
+                logger.info("Starting automated model promotion...")
+                
+                # Get project/entity from environment or config
+                entity = os.getenv("WANDB_ENTITY")
+                project = os.getenv("WANDB_PROJECT")
+                
+                # Promote the model we just trained (which is the best for this run)
+                # Note: promote_best_model currently scans the whole project for the best run.
+                # If we want to verify THIS run is the best, the script handles that logic.
+                promote_best_model(
+                    entity=entity,
+                    project=project,
+                    metric="val_accuracy",
+                    mode="max",
+                    alias="production" # We are promoting to production!
+                )
+                
+                # Trigger Cloud Run Redeployment of the "api" service
+                # We hardcode these or fetch from env since they are infra-specific
+                # Ideally these would be in the hydra config
+                cloud_run_service = "api"
+                cloud_run_region = "europe-west1"
+                cloud_run_project_id = os.getenv("GCP_PROJECT_ID", "dtumlops-484016") # Fallback to project ID seen in other files
+                
+                trigger_cloud_run_redeployment(
+                    service_name=cloud_run_service,
+                    region=cloud_run_region,
+                    project_id=cloud_run_project_id
+                )
+                
+            except Exception as e:
+                logger.error(f"Automated promotion/deployment failed: {e}")
 
 
 if __name__ == "__main__":
