@@ -570,7 +570,9 @@ Our results from the Cloud Run showed a stable performance with 0.5 requests per
 >
 > Answer:
 
---- question 28 fill here ---
+We implemented **GCP alert systems** that notify us when any part of our cloud application fails. These alerts monitor Cloud Run service health, build failures in Cloud Build, and resource utilization. This proactive monitoring ensures we are immediately aware of issues in production rather than discovering them after users complain.
+
+We also built a **drift detection service** deployed as a separate Cloud Run endpoint (`/monitoring`). This service compares the distribution of incoming inference requests against our training data to detect data drift. When the input distribution shifts significantly from what the model was trained on, it signals that model performance may degrade and retraining might be needed. This closes the MLOps feedback loop by connecting production data back to model development.
 
 ### Question 29
 
