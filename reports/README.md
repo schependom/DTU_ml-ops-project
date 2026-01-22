@@ -595,7 +595,13 @@ This architecture enables continuous integration, automated training, experiment
 >
 > Answer:
 
---- question 30 fill here ---
+One of the biggest challenges was **deploying our API to Google Cloud Run**. Understanding the error messages from GCP proved difficult—they were often cryptic and required significant debugging to interpret. Issues ranged from authentication problems with service accounts to container configuration mismatches. We overcame this by carefully reading the Cloud Build logs, testing containers locally before deploying, and iteratively fixing issues one at a time until the API was fully operational.
+
+**Writing comprehensive tests** to achieve sufficient code coverage was another time-consuming task. It wasn't just about writing tests, but writing the *right* tests that meaningfully validated our code paths. We had to balance unit tests for individual functions with integration tests for the API endpoints. Getting the coverage percentage up required identifying untested edge cases and ensuring our test data was representative of real-world inputs.
+
+**Getting continuous integration to pass consistently** required substantial bug fixing. Our GitHub Actions workflows would fail for various reasons: dependency conflicts between environments, flaky tests that passed locally but failed in CI, and authentication issues when accessing GCP resources from the CI environment. We addressed these by adding proper caching, ensuring environment parity between local and CI setups, and using our custom GitHub Actions for consistent Python and GCP setup across workflows.
+
+Additionally, integrating multiple services—DVC, W&B, GCP, and GitHub Actions—meant dealing with authentication and configuration across all of them. Each service had its own way of handling secrets and credentials, and making them work together seamlessly took considerable effort. We resolved this by centralizing our GCP authentication through reusable GitHub Actions and carefully managing environment variables and secrets.
 
 ### Question 31
 
