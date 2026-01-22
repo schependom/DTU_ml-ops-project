@@ -548,6 +548,8 @@ To invoke the service, a user could use curl:
 Or on windows (if you haven't installed curl):
 `Invoke-RestMethod -Uri "https://api-1041875805298.europe-west1.run.app/inference" -Method Post -ContentType "application/json" -Body '{"statement": "The movie was amazing"}'`
 
+NOTE: the API cloud run is request-based, so it might take a few minutes to start up if it hasn't been used in a while.
+
 ### Question 25
 
 > **Did you perform any unit testing and load testing of your API? If yes, explain how you did it and what results for** > **the load testing did you get. If not, explain how you would do it.**
