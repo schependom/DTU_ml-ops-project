@@ -90,7 +90,7 @@ will check the repositories and the code to verify your answers.
 - [x] Get your model training in GCP using either the Engine or Vertex AI (M21)
 - [x] Create a FastAPI application that can do inference using your model (M22)
 - [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
-- [ ] Write API tests for your application and setup continuous integration for these (M24)
+- [x] Write API tests for your application and setup continuous integration for these (M24)
 - [ ] Load test your application (M24)
 - [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 - [ ] Create a frontend for your API (M26)
@@ -195,7 +195,7 @@ We initialized the repository from the `DTU_ml-ops-template` cookiecutter and ke
 >
 > Answer:
 
-We used `ruff` for both linting, as well as for formatting. We also used `ty` for typing (TODO: documentation??) These concepts are important in larger projects because they help catch errors early and make code more maintainable. For example, typing helps catch errors at compile time, while linting and formatting help keep code consistent and readable.
+We used `ruff` for both linting and formatting, ensuring code was consistent and met style standards automatically. For typing, we adopted [`ty`](https://docs.astral.sh/ty/) to enforce static type checking across our codebase. These concepts are important in larger projects because they help catch errors early and make the codebase more maintainable. For example, type checking with `ty` helps identify type-related errors before running the code, while linting and formatting tools keep contributions clean and readable, making collaboration easier.
 
 The corresponding `ruff` and `ty` VS Code extensions really helped to catch these errors early on such that we didn't had to only rely on `pre-commit`.
 
@@ -243,7 +243,7 @@ Our total code coverage is **70.78%**. This gives reasonable confidence that cor
 >
 > Answer:
 
---- question 9 fill here ---
+We used branches primarily for implementing larger features that affected multiple parts of our workflow. For smaller, isolated changes, we committed directly to main. Additionally, we maintained a dedicated `release` branch for triggering our GCP deployment pipeline (as described in more detail in Question 11). This setup allowed us to avoid unnecessary cloud costs by only running expensive training jobs when code was explicitly pushed or merged to `release`. Pull requests were used when merging feature branches into main, providing an opportunity for code review and ensuring that CI checks passed before integration. This branching strategy struck a balance between overhead and safety: small fixes could land quickly, while larger changes received proper review and testing before merging.
 
 ### Question 10
 
@@ -256,7 +256,7 @@ Our total code coverage is **70.78%**. This gives reasonable confidence that cor
 >
 > Answer:
 
-We used created a Google Cloud Platform (GCP) bucket to store our (??). We then used `dvc` to version control these files. TODO: what happens when doing a cloud run? We mount the `gcs/...` directory as a volume!
+We used a Google Cloud Platform (GCP) bucket to store our data artifacts, specifically the preprocessed Rotten Tomatoes dataset and model checkpoints. We then used `dvc` (Data Version Control) to version control these files, enabling us to reliably access the correct versions of data and models across development environments and during CI/CD runs. In our cloud workflows—such as when deploying with Cloud Run—we configured the pipeline to access the GCP bucket using service account authentication (set up in GitHub Actions). The required files are automatically pulled from the bucket using `dvc pull` as part of the deployment or job start-up, ensuring consistency between local and cloud environments. This setup meant that data changes and model versions were tracked and reproducible, and team members could collaborate without manual data transfers or risk of mismatched datasets.
 
 ### Question 11
 
@@ -349,7 +349,13 @@ In the screenshot below, training loss decreases while training accuracy increas
 
 ![W&B experiment metrics (loss/accuracy curves)](figures/Wandb%20shot.png)
 
-<span style="color: blue;">_Add more about sweeps and stuff_</span>
+We also used W&B Sweeps for hyperparameter optimization. The sweep dashboard below shows five runs exploring different configurations, tracking validation loss, validation accuracy, and training metrics over training steps. We can see that different hyperparameter combinations lead to varying convergence behavior—some runs achieve lower validation loss more quickly, while others plateau or show signs of overfitting.
+
+![W&B sweep dashboard showing multiple runs](figures/sweep.jpg)
+
+The parallel coordinates plot below visualizes how our swept hyperparameters—learning rate (`optimizer.lr`) and batch size (`training.batch_size`)—affect validation loss. Lower validation loss (lighter colors) appears to correlate with learning rates around 1e-4 to 2e-4 and batch sizes of 128. This visualization helped us identify promising hyperparameter regions which could be used to select the best hyperparameters for the final model.
+
+![Parallel coordinates plot of hyperparameter sweep](figures/sweep_opt.jpg)
 
 ### Question 15
 
@@ -428,7 +434,9 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 >
 > Answer:
 
---- question 19 fill here ---
+Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with Standard storage class. It contains three main folders: `data/` for training datasets, `files/` for model artifacts and checkpoints, and `predictions/` for storing inference outputs from our API.
+
+![GCS bucket overview](figures/gcs_bucket.jpg)
 
 ### Question 20
 

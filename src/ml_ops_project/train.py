@@ -12,6 +12,7 @@ Usage:
 """
 
 import os
+import typing
 
 import hydra
 import pytorch_lightning as pl
@@ -21,6 +22,7 @@ from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
+import omegaconf
 
 import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
@@ -33,6 +35,16 @@ load_dotenv()
 # Configure file-based logging: main log + alerts-only log for warnings/errors
 logger.add("logs/train.log", rotation="500 MB")
 logger.add("logs/train_alerts.log", level="WARNING", rotation="500 MB")
+
+# Add OmegaConf types to the safe globals list
+torch.serialization.add_safe_globals([
+    omegaconf.base.ContainerMetadata, 
+    omegaconf.base.Metadata,
+    omegaconf.nodes.AnyNode,
+    DictConfig, 
+    OmegaConf,
+    typing.Any
+])
 
 
 def setup_wandb(cfg: DictConfig) -> bool:
@@ -142,12 +154,20 @@ def train(cfg: DictConfig) -> None:
     logger.info(f"Configuring model: {cfg.model.name}, with optimizer: {cfg.optimizer}")
     model = SentimentClassifier(model_name=cfg.model.name, optimizer_cfg=cfg.optimizer)
 
+    run_id = wandb.run.id if wandb.run else "default"
+
+    # Remove the leading / from the second argument
+    checkpoint_dir = os.path.join(cfg.training.checkpoint_dir, "run_" + run_id)
+
+    logger.info(f"Checkpoint directory: {checkpoint_dir}")
+    os.makedirs(checkpoint_dir, exist_ok=True)
+
     # --- Callbacks ---
     # Callbacks are hooks that execute at specific points in the training loop.
     callbacks = [
         # ModelCheckpoint: saves model weights when monitored metric improves
         ModelCheckpoint(
-            dirpath=cfg.training.checkpoint_dir,
+            dirpath=checkpoint_dir,
             filename="{epoch:02d}-{val_accuracy:.3f}",
             monitor="val_accuracy",
             mode="max",  # higher accuracy is better
