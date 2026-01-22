@@ -470,7 +470,16 @@ Our Cloud Build history shows numerous builds executed during development. Most 
 >
 > Answer:
 
---- question 22 fill here ---
+We successfully trained our model in the cloud using **Vertex AI**.
+
+We automated this process with a CI/CD pipeline using **GitHub Actions** (specified in `.github/workflows/gcp.yaml`). When code is merged into the `release` branch, our workflow:
+1.  Builds a Docker image using `dockerfiles/cloud.dockerfile` (as defined in `GCP/cloudbuild.yaml`), which captures our exact Python environment.
+2.  Pushes this image to the **Google Artifact Registry**.
+3.  Submits a **Vertex AI Custom Job** using the configuration in `GCP/vertex_ai_train.yaml`.
+
+The training job runs our `src/ml_ops_project/train.py` script on a managed worker node (using `n1-standard-4` with `NVIDIA_TESLA_T4` GPUs as defined in our `configs/GCP/config_gpu.yaml` config file). It pulls data from our GCS bucket (via DVC) and logs all metrics and artifacts to **Weights & Biases**, enabling us to monitor cloud training progress in real-time. If the model training leads to a better model than the previous one, the new model is promoted to the WandB model registry with the alias `inference`.
+
+We chose Vertex AI over the raw Compute Engine because it is a *managed* service that automatically handles infrastructure provisioning, driver installation, and -- crucially -- shutdown of expensive GPU resources after the job completes, which avoids accidental costs and waste of our limited GCP credits.
 
 ## Deployment
 
