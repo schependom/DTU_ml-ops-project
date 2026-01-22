@@ -183,7 +183,7 @@ To host the API, you first need to push it to the artifact registry:
 - Deploy a service on Cloud Run configured from the image or via the following command.
 `gcloud run deploy <service-name> --image <image-name>:<image-tag> --platform managed --region europe-west1 --allow-unauthenticated`
 
-Finally, verify that it's up and running:   
+Finally, verify that it's up and running:
 `gcloud run services list`
 `gcloud run services describe <service-name> --region europe-west1`
 

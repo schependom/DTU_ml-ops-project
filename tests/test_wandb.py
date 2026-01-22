@@ -1,8 +1,9 @@
 import os
 
 import pytest
-import wandb
 from dotenv import load_dotenv
+
+import wandb
 
 load_dotenv()
 

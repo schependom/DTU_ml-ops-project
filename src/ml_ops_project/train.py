@@ -15,6 +15,7 @@ import os
 import typing
 
 import hydra
+import omegaconf
 import pytorch_lightning as pl
 import torch
 from dotenv import load_dotenv
@@ -22,7 +23,6 @@ from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
-import omegaconf
 
 import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
