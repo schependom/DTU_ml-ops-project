@@ -481,6 +481,10 @@ The training job runs our `src/ml_ops_project/train.py` script on a managed work
 
 We chose Vertex AI over the raw Compute Engine because it is a *managed* service that automatically handles infrastructure provisioning, driver installation, and -- crucially -- shutdown of expensive GPU resources after the job completes, which avoids accidental costs and waste of our limited GCP credits.
 
+![Vertex AI training job](figures/vertexAI.jpg)
+
+Note that in the training job above, we limited the number of epochs to `max_epochs=1` such that the training completed in less than 2 minutes. This is only for the purpose of this report and should not be used in production, of course.
+
 ## Deployment
 
 ### Question 23
