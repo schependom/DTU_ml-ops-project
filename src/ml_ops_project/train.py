@@ -12,6 +12,7 @@ Usage:
 """
 
 import os
+import typing
 
 import hydra
 import pytorch_lightning as pl
@@ -41,7 +42,8 @@ torch.serialization.add_safe_globals([
     omegaconf.base.Metadata,
     omegaconf.nodes.AnyNode,
     DictConfig, 
-    OmegaConf
+    OmegaConf,
+    typing.Any
 ])
 
 
