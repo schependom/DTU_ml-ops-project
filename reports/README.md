@@ -297,8 +297,6 @@ Our unit tests cover the main components of the ML pipeline:
 - **Evaluation logic tests**: validate checkpoint selection logic (use explicit checkpoint path, pick the newest checkpoint in a directory, and raise informative errors when checkpoints are missing).
 - **Training orchestration tests**: mock Lightning/WandB to test that `train()` wires together data, model, trainer, and calls `fit()` and `test()`; we also test `setup_wandb()` behavior (disabled, missing key, sweep vs non-sweep).
 
-We additionally keep a small WandB access check for the service account locally, but it is excluded from CI because it relies on secrets and external network access.
-
 The CI matrix runs the same suite across Python 3.11 and 3.12 on macOS, Ubuntu, and Windows (six environments), which helps catch OS-specific issues (e.g., filesystem timestamp resolution). A successful CI run example: [GitHub Actions run 21066565482](https://github.com/schependom/DTU_ml-ops-project/actions/runs/21066565482).
 
 ## Running code and tracking experiments
