@@ -613,4 +613,12 @@ Additionally, integrating multiple servicesâ€”DVC, W&B, GCP, and GitHub Actionsâ
 > _Student sXXXXXX was in charge of developing of setting up the initial cookie cutter project and developing of the_ > _docker containers for training our applications._ > _Student sXXXXXX was in charge of training our models in the cloud and deploying them afterwards._ > _All members contributed to code by..._ > _We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code._
 > Answer:
 
---- question 31 fill here ---
+**Student s204078** wrote tests and created GitHub Actions workflows. Responsible for code structure including comments, linting setup, and contributed to report questions.
+
+**Student s202186** mainly worked on visualization, tests, load testing with Locust, and contributed to report questions.
+
+**Student s214631** worked on the API and deployment infrastructure. Set up uv for dependency management, implemented tasks and Hydra configuration, built Dockerfiles, created the FastAPI application, handled cloud deployment, and configured alerts.
+
+**Student s251739** handled most of the Google Cloud Platform setup including CI with GitHub Actions, training pipeline and model implementation with PyTorch Lightning, monitoring for data drift, and containerization in general.
+
+All members contributed to code reviews, debugging, and documentation. We used GitHub Copilot and ChatGPT/Claude to assist with debugging, writing boilerplate code, and answering some questions.
