@@ -481,7 +481,7 @@ Our Cloud Build history (see figure below) shows numerous builds executed during
 
 We successfully trained our model in the cloud using **Vertex AI**.
 
-We automated this process with a CI/CD pipeline using **GitHub Actions** (specified in `.github/workflows/gcp.yaml`). When code is merged into the `release` branch, our workflow:
+We automated this process with a CI/CD pipeline using **GitHub Actions** (specified in the `.github/workflows/gcp.yaml` file). When code is merged into the `release` branch, our workflow:
 
 1.  Builds a Docker image using `dockerfiles/cloud.dockerfile` (as defined in `GCP/cloudbuild.yaml`), which captures our exact Python environment.
 2.  Pushes this image to the **Google Artifact Registry**.
