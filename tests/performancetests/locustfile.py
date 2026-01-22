@@ -8,8 +8,8 @@ class MyUser(HttpUser):
     @task
     def get_root(self) -> None:
         """
-        Simulates a user visiting the root. 
-        Note: Your api.py doesn't define a '/' route, 
+        Simulates a user visiting the root.
+        Note: Your api.py doesn't define a '/' route,
         so this will return a 404 unless you add one.
         """
         self.client.get("/")
@@ -17,13 +17,11 @@ class MyUser(HttpUser):
     @task(5)
     def post_inference(self) -> None:
         """
-        Simulates a user sending a text statement to the 
+        Simulates a user sending a text statement to the
         SentimentClassifier model for inference.
         """
         # This matches the 'InferenceInput' class in your api.py
-        payload = {
-            "statement": "The DTU ML-Ops course is a great way to learn production ML!"
-        }
-        
+        payload = {"statement": "The DTU ML-Ops course is a great way to learn production ML!"}
+
         # This matches the @app.post("/inference") route in your api.py
         self.client.post("/inference", json=payload)
