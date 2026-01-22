@@ -512,16 +512,23 @@ Note that in the training job above, we limited the number of epochs to `max_epo
 
 We wrote an API for inference in our model using FastAPI. The API app contains a lifecycle using FastAPI's 'lifespan' setup. The lifecycle starts by downloading the model from our model registry via weights and biases; then instanciating the model via pytorch lightnings `load_from_checkpoint()` function. The API has a /inference endpoint, which uses the model for inference, given a json input like so:
 
-{statement: str}
+```json
+{
+    "statement": "string"
+}
+```
 
 and returns a packet of json like so:
 
-{sentiment: int}
+```json
+{
+    "sentiment": "int"
+}
+```
 
 This is handled using pydantic.
 
 Additionally, the app saves prediction sets of input -> output to google cloud, such that another app can run metrics and check drift.
-
 
 ### Question 24
 
@@ -533,7 +540,7 @@ Additionally, the app saves prediction sets of input -> output to google cloud, 
 > _For deployment we wrapped our model into application using ... . We first tried locally serving the model, which_ > _worked. Afterwards we deployed it in the cloud, using ... . To invoke the service an user would call_ > _`curl -X POST -F "file=@file.json"<weburl>`_
 >
 > Answer:
-We first tested our API locally using uvicorn to make sure everything worked; afterwards we containerized the application, tagged it and pushed it to the artifact registry (see the main `README.md`). From there, we deployed it via cloud run services on the google cloud interface, using the image from the artifact registry.
+> We first tested our API locally using uvicorn to make sure everything worked; afterwards we containerized the application, tagged it and pushed it to the artifact registry (see the main `README.md`). From there, we deployed it via cloud run services on the google cloud interface, using the image from the artifact registry.
 
 To invoke the service, a user could use curl:
 `curl -X POST https://api-1041875805298.europe-west1.run.app/inference -H "Content-Type: application/json" -d '{"statement": "The movie was amazing"}'`
@@ -552,7 +559,7 @@ Or on windows (if you haven't installed curl):
 >
 > Answer:
 
-We performed API tests using `pytest` and FastAPI’s `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
+We performed API tests using `pytest` and FastAPI's `TestClient` in `tests/integrationtests/test_apis.py`. The tests stub the model/tokenizer and the GCP upload call so the handlers run quickly and deterministically. We verify the happy-path inference response (status 200 with a valid `sentiment`), validate request schema errors (missing `statement` returns 422), and check that the `/metrics` endpoint exposes the `prediction_requests` counter. These integration-style unit tests were run locally with `uv run pytest tests/integrationtests/test_apis.py`, and all three tests passed.
 
 For load testing, we used locust to simulate the user traffic for both our local API and our deployed Cloud Run endpoint. We defined a locustfile.py with two tasks, a get_root task and a weighted post_inference task that sends JSON payloads containing a statement key to the '/inference' endpoint.
 Our results from the Cloud Run showed a stable performance with 0.5 requests per second per user and a failure rate of approximately 21%. (figures/Locust.png)
@@ -568,7 +575,14 @@ Our results from the Cloud Run showed a stable performance with 0.5 requests per
 >
 > Answer:
 
---- question 26 fill here ---
+We implemented monitoring for our deployed model using the `prometheus-client` library. We manually instrumented our `api.py` to track key metrics:
+
+1.  `prediction_requests` (Counter): Tracks the total capacity and traffic of our service.
+2.  `prediction_error` (Counter): Counts exceptions raised during inference, allowing us to track failure rates.
+3.  `prediction_latency_seconds` (Histogram): Measures the time taken to process each request, which is critical for ensuring user experience.
+4.  `review_length_summary` (Summary): Tracks the distribution of input text lengths, which can help detect data drift (e.g., if users start sending significantly longer text than what the model was trained on).
+
+These metrics are exposed via the `/metrics` endpoint (using `make_asgi_app`). In a real production setup, a Prometheus server would scrape this endpoint to collect time-series data, which could then be visualized in Grafana dashboards.
 
 ## Overall discussion of project
 
