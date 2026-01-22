@@ -50,6 +50,6 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 - [ ] **Q27**: Credits used + most expensive service + thoughts on cloud
 - [ ] **Q28**: Extra work beyond the other questions (what + why)
-- [ ] **Q29**: Architecture figure + explain the pipeline steps
+- [x] **Q29**: Architecture figure + explain the pipeline steps
 - [ ] **Q30**: Biggest struggles + how you overcame them
 - [ ] **Q31**: Individual contributions + how you used generative AI tools
