@@ -437,7 +437,7 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 
 Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with Standard storage class. It contains three main folders: `data/` for training datasets, `files/` for model artifacts and checkpoints, and `predictions/` for storing inference outputs from our API.
 
-![GCS bucket overview](figures/gcs_bucket.jpg)
+![GCS bucket overview](figures/19gcs_bucket.jpg)
 
 ### Question 20
 
