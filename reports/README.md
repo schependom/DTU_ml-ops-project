@@ -169,7 +169,7 @@ We did **Transfer Learning** by using the Hugging Face ecosystem to fine-tune a 
 
 We managed dependencies using `uv`, with `pyproject.toml` as the source of declared dependencies and a committed lock file (`uv.lock`) to make installs reproducible across machines. When we needed to add or update a package, we used `uv add <package>`, which updates `pyproject.toml` and refreshes the lock file with resolved, pinned versions. We made sure to keep track of our normal dependencies and development dependencies, by adding a dependency group called 'dev'. To add packages to this group, we used `uv add <package> --group dev`.
 
-For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync --dev`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving), including everything in the development dependency group. After that, project commands are run through `uv` (e.g., `uv run ...`) to ensure execution happens inside the locked environment. When simply executing the code, it's sufficient to just `uv sync`.
+For a new team member to get an exact copy of the environment, they would clone the repository and run `uv sync --dev`. This creates/updates the local virtual environment and installs the exact dependency versions specified in `uv.lock` (instead of re-resolving), including everything in the development dependency group. After that, project commands are run through `uv` (e.g., `uv run <command>`) to ensure execution happens inside the locked environment. When simply executing the code, it's sufficient to just `uv sync`.
 
 ### Question 5
 
