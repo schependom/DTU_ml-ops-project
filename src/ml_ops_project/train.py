@@ -247,7 +247,7 @@ def train(cfg: DictConfig) -> None:
                     project=project,
                     metric="val_accuracy",
                     mode="max",
-                    alias="production" # We are promoting to production!
+                    alias="inference" # We are promoting to inference!
                 )
                 
                 # Trigger Cloud Run Redeployment of the "api" service
