@@ -175,16 +175,14 @@ if __name__ == "__main__":
         args.alias,
         args.target_entity,
     )
-    
+
     # --- Trigger Cloud Run Redeployment ---
     if args.deploy_service:
         if not args.deploy_region or not args.deploy_project:
             print("Error: --deploy-region and --deploy-project are required when --deploy-service is set.")
         else:
             trigger_cloud_run_redeployment(
-                service_name=args.deploy_service,
-                region=args.deploy_region,
-                project_id=args.deploy_project
+                service_name=args.deploy_service, region=args.deploy_region, project_id=args.deploy_project
             )
 
 
@@ -206,29 +204,30 @@ def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: s
         return
 
     print(f"Triggering redeployment for Cloud Run service: {service_name}...")
-    
+
     client = run_v2.ServicesClient()
     service_path = client.service_path(project_id, region, service_name)
-    
+
     # Get current service configuration
     request = run_v2.GetServiceRequest(name=service_path)
     service = client.get_service(request=request)
-    
+
     # Create a new revision by updating the update_time env var (or just re-submitting)
-    # Just sending an update request with the existing config is often enough to trigger 
+    # Just sending an update request with the existing config is often enough to trigger
     # a new revision if we change something small, like an annotation or env var.
     # Here we will add/update a "LAST_DEPLOYED" env var to force a change.
-    
+
     # Find the container (usually the first one)
     if not service.template.containers:
         print("Error: No containers found in service template.")
         return
-        
+
     container = service.template.containers[0]
-    
+
     import datetime
+
     timestamp = datetime.datetime.now().isoformat()
-    
+
     # Update or add the env var
     env_var_found = False
     for env in container.env:
@@ -236,10 +235,10 @@ def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: s
             env.value = timestamp
             env_var_found = True
             break
-    
+
     if not env_var_found:
         container.env.append(run_v2.EnvVar(name="LAST_DEPLOYED", value=timestamp))
-        
+
     # Update the service
     operation = client.update_service(service=service)
     print("Waiting for operation to complete...")
@@ -249,14 +248,14 @@ def trigger_cloud_run_redeployment(service_name: str, region: str, project_id: s
 
 if __name__ == "__main__":
     args = parse_args()
-    
+
     # Add deployment arguments manually since we didn't update parse_args yet
     # But wait, looking at the code, it's better to update parse_args properly.
     # Let me just update the whole file content for safety/clarity or better yet,
     # use a separate editing step for parse_args to keep this clean.
-    # Actually, I will modify parse_args in the same tool call if possible or 
+    # Actually, I will modify parse_args in the same tool call if possible or
     # just do two chunks. I will assume I need to update parse_args too.
-    
+
     promote_best_model(
         args.entity,
         args.project,
@@ -267,13 +266,11 @@ if __name__ == "__main__":
         args.alias,
         args.target_entity,
     )
-    
+
     if args.deploy_service:
-         if not args.deploy_region or not args.deploy_project:
+        if not args.deploy_region or not args.deploy_project:
             print("Error: --deploy-region and --deploy-project are required when --deploy-service is set.")
-         else:
+        else:
             trigger_cloud_run_redeployment(
-                service_name=args.deploy_service,
-                region=args.deploy_region,
-                project_id=args.deploy_project
+                service_name=args.deploy_service, region=args.deploy_region, project_id=args.deploy_project
             )

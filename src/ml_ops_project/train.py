@@ -37,14 +37,16 @@ logger.add("logs/train.log", rotation="500 MB")
 logger.add("logs/train_alerts.log", level="WARNING", rotation="500 MB")
 
 # Add OmegaConf types to the safe globals list
-torch.serialization.add_safe_globals([
-    omegaconf.base.ContainerMetadata, 
-    omegaconf.base.Metadata,
-    omegaconf.nodes.AnyNode,
-    DictConfig, 
-    OmegaConf,
-    typing.Any
-])
+torch.serialization.add_safe_globals(
+    [
+        omegaconf.base.ContainerMetadata,
+        omegaconf.base.Metadata,
+        omegaconf.nodes.AnyNode,
+        DictConfig,
+        OmegaConf,
+        typing.Any,
+    ]
+)
 
 
 def setup_wandb(cfg: DictConfig) -> bool:
@@ -226,19 +228,19 @@ def train(cfg: DictConfig) -> None:
     # Finalize W&B run after all logging is complete (fit + test)
     if wandb_logger is not None:
         wandb.finish()
-        
+
         # --- Automated Model Promotion & Deployment ---
         # Only run this if we are using W&B and on the main process
         if run_id != "default":
             try:
                 from ml_ops_project.promote_best_model import promote_best_model, trigger_cloud_run_redeployment
-                
+
                 logger.info("Starting automated model promotion...")
-                
+
                 # Get project/entity from environment or config
                 entity = os.getenv("WANDB_ENTITY")
                 project = os.getenv("WANDB_PROJECT")
-                
+
                 # Promote the model we just trained (which is the best for this run)
                 # Note: promote_best_model currently scans the whole project for the best run.
                 # If we want to verify THIS run is the best, the script handles that logic.
@@ -247,22 +249,22 @@ def train(cfg: DictConfig) -> None:
                     project=project,
                     metric="val_accuracy",
                     mode="max",
-                    alias="inference" # We are promoting to inference!
+                    alias="inference",  # We are promoting to inference!
                 )
-                
+
                 # Trigger Cloud Run Redeployment of the "api" service
                 # We hardcode these or fetch from env since they are infra-specific
                 # Ideally these would be in the hydra config
                 cloud_run_service = "api"
                 cloud_run_region = "europe-west1"
-                cloud_run_project_id = os.getenv("GCP_PROJECT_ID", "dtumlops-484016") # Fallback to project ID seen in other files
-                
+                cloud_run_project_id = os.getenv(
+                    "GCP_PROJECT_ID", "dtumlops-484016"
+                )  # Fallback to project ID seen in other files
+
                 trigger_cloud_run_redeployment(
-                    service_name=cloud_run_service,
-                    region=cloud_run_region,
-                    project_id=cloud_run_project_id
+                    service_name=cloud_run_service, region=cloud_run_region, project_id=cloud_run_project_id
                 )
-                
+
             except Exception as e:
                 logger.error(f"Automated promotion/deployment failed: {e}")
 
