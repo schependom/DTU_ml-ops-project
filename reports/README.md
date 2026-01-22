@@ -584,6 +584,8 @@ We implemented monitoring for our deployed model using the `prometheus-client` l
 
 These metrics are exposed via the `/metrics` endpoint (using `make_asgi_app`). In a real production setup, a Prometheus server would scrape this endpoint to collect time-series data, which could then be visualized in Grafana dashboards.
 
+![Metrics](figures/metrics.png)
+
 ## Overall discussion of project
 
 > In the following section we would like you to think about the general structure of your project.
