@@ -481,6 +481,10 @@ The training job runs our `src/ml_ops_project/train.py` script on a managed work
 
 We chose Vertex AI over the raw Compute Engine because it is a *managed* service that automatically handles infrastructure provisioning, driver installation, and -- crucially -- shutdown of expensive GPU resources after the job completes, which avoids accidental costs and waste of our limited GCP credits.
 
+![Vertex AI training job](figures/vertexAI.jpg)
+
+Note that in the training job above, we limited the number of epochs to `max_epochs=1` such that the training completed in less than 2 minutes. This is only for the purpose of this report and should not be used in production, of course.
+
 ## Deployment
 
 ### Question 23
@@ -636,4 +640,12 @@ Additionally, integrating multiple servicesâ€”DVC, W&B, GCP, and GitHub Actionsâ
 > _Student sXXXXXX was in charge of developing of setting up the initial cookie cutter project and developing of the_ > _docker containers for training our applications._ > _Student sXXXXXX was in charge of training our models in the cloud and deploying them afterwards._ > _All members contributed to code by..._ > _We have used ChatGPT to help debug our code. Additionally, we used GitHub Copilot to help write some of our code._
 > Answer:
 
---- question 31 fill here ---
+**Student s204078** wrote tests and created GitHub Actions workflows. Responsible for code structure including comments, linting setup, and contributed to report questions.
+
+**Student s202186** mainly worked on visualization, tests, load testing with Locust, and contributed to report questions.
+
+**Student s214631** worked on the API and deployment infrastructure. Set up uv for dependency management, implemented tasks and Hydra configuration, built Dockerfiles, created the FastAPI application, handled cloud deployment, and configured alerts.
+
+**Student s251739** handled most of the Google Cloud Platform setup including CI with GitHub Actions, training pipeline and model implementation with PyTorch Lightning, monitoring for data drift, and containerization in general.
+
+All members contributed to code reviews, debugging, and documentation. We used GitHub Copilot and ChatGPT/Claude to assist with debugging, writing boilerplate code, and answering some questions.
