@@ -34,6 +34,9 @@ load_dotenv()
 logger.add("logs/train.log", rotation="500 MB")
 logger.add("logs/train_alerts.log", level="WARNING", rotation="500 MB")
 
+# Add OmegaConf types to the safe globals list
+torch.serialization.add_safe_globals([DictConfig, OmegaConf])
+
 
 def setup_wandb(cfg: DictConfig) -> bool:
     """Initialize Weights & Biases for experiment tracking.

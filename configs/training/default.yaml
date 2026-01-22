@@ -1,5 +1,5 @@
 batch_size: 64
-max_epochs: 2
+max_epochs: 3
 seed: 23
 checkpoint_dir: "checkpoints/"
 num_workers: 4
