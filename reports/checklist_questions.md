@@ -34,7 +34,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 - [...] **Q17**: GCP services used + short explanation of each
 - [ ] **Q18**: Compute Engine usage + VM types
-- [ ] **Q19**: GCP bucket screenshots (stored data)
+- [x] **Q19**: GCP bucket screenshots (stored data)
 - [ ] **Q20**: Artifact Registry screenshots (docker images)
 - [ ] **Q21**: Cloud Build history screenshots
 - [ ] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
