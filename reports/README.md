@@ -570,6 +570,19 @@ We have not performed load testing yet. To do so, we would follow the course rec
 >
 > Answer:
 
+![System architecture overview](figures/workflow.jpg)
+
+The diagram illustrates our end-to-end MLOps pipeline. **Data ingestion** starts with the Hugging Face dataset, which is preprocessed and stored in GCS with DVC handling version control.
+
+**Development** begins on the local machine where developers clone the repository from GitHub. Pre-commit hooks enforce code quality before each commit. When code is pushed, **GitHub Actions** triggers our CI/CD pipeline, running linting and pytest to validate changes.
+
+For **training**, merging a PR to the `release` branch triggers Cloud Build to create a Docker image and push it to Artifact Registry. This image is then used by Vertex AI to run training jobs in the cloud. Developers can also run local training and hyperparameter sweeps. All training runs log metrics and artifacts to the **W&B Project**, enabling experiment tracking and comparison.
+
+**Model management** is handled through W&B Registry. After training, the best model is promoted to the registry based on validation metrics. The system checks if a newly trained model outperforms the current best before promotion.
+
+**Deployment** uses Cloud Run to host our FastAPI application with two main endpoints: `/inference` for predictions and `/monitoring` for data drift detection. When a **user** sends a request to the `/inference` endpoint, the API fetches the best model from the W&B Registry and returns a sentiment prediction. The `/monitoring` endpoint allows us to detect data drift by comparing incoming data distributions against the training data.
+
+This architecture enables continuous integration, automated training, experiment tracking, and production deployment while maintaining reproducibility through DVC and comprehensive monitoring through W&B and our drift detection API.
 The diagram below illustrates our end-to-end MLOps pipeline, bridging local development with cloud execution on GCP.
 1.  **Data Ingestion**: We fetch the Rotten Tomatoes dataset from **Hugging Face**, preprocess it, and store the versioned artifacts in a **GCS Bucket** using **DVC**.
 2.  **Local Development**: Developers clone the repo from **GitHub**. They can run local training (logging to **WandB** Projects) or run hyperparameter **Sweeps**.
