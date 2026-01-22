@@ -91,16 +91,16 @@ will check the repositories and the code to verify your answers.
 - [x] Create a FastAPI application that can do inference using your model (M22)
 - [ ] Deploy your model in GCP using either Functions or Run as the backend (M23)
 - [x] Write API tests for your application and setup continuous integration for these (M24)
-- [ ] Load test your application (M24)
+- [x] Load test your application (M24)
 - [ ] Create a more specialized ML-deployment API using either ONNX or BentoML, or both (M25)
 - [ ] Create a frontend for your API (M26)
 
 ### Week 3
 
-- [ ] Check how robust your model is towards data drifting (M27)
-- [ ] Setup collection of input-output data from your deployed application (M27)
-- [ ] Deploy to the cloud a drift detection API (M27)
-- [ ] Instrument your API with a couple of system metrics (M28)
+- [x] Check how robust your model is towards data drifting (M27)
+- [x] Setup collection of input-output data from your deployed application (M27)
+- [x] Deploy to the cloud a drift detection API (M27)
+- [x] Instrument your API with a couple of system metrics (M28)
 - [ ] Setup cloud monitoring of your instrumented application (M28)
 - [ ] Create one or more alert systems in GCP to alert you if your app is not behaving correctly (M28)
 - [ ] If applicable, optimize the performance of your data loading using distributed data loading (M29)
@@ -351,11 +351,12 @@ In the screenshot below, training loss decreases while training accuracy increas
 
 We also used W&B Sweeps for hyperparameter optimization. The sweep dashboard below shows five runs exploring different configurations, tracking validation loss, validation accuracy, and training metrics over training steps. We can see that different hyperparameter combinations lead to varying convergence behavior—some runs achieve lower validation loss more quickly, while others plateau or show signs of overfitting.
 
-![W&B sweep dashboard showing multiple runs](figures/sweep.jpg)
+The parallel coordinates plot (right) visualizes how our swept hyperparameters—learning rate (`optimizer.lr`) and batch size (`training.batch_size`)—affect validation loss. Lower validation loss (lighter colors) appears to correlate with learning rates around 1e-4 to 2e-4 and batch sizes of 128. This visualization helped us identify promising hyperparameter regions which could be used to select the best hyperparameters for the final model.
 
-The parallel coordinates plot below visualizes how our swept hyperparameters—learning rate (`optimizer.lr`) and batch size (`training.batch_size`)—affect validation loss. Lower validation loss (lighter colors) appears to correlate with learning rates around 1e-4 to 2e-4 and batch sizes of 128. This visualization helped us identify promising hyperparameter regions which could be used to select the best hyperparameters for the final model.
-
-![Parallel coordinates plot of hyperparameter sweep](figures/sweep_opt.jpg)
+<p float="left">
+  <img src="figures/sweep.jpg" width="49%" />
+  <img src="figures/sweep_opt.jpg" width="49%" />
+</p>
 
 ### Question 15
 
@@ -436,7 +437,7 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 
 Our GCS bucket `ml_ops_project_g7` is hosted in the EU (multiple regions) with Standard storage class. It contains three main folders: `data/` for training datasets, `files/` for model artifacts and checkpoints, and `predictions/` for storing inference outputs from our API.
 
-![GCS bucket overview](figures/gcs_bucket.jpg)
+![GCS bucket overview](figures/19gcs_bucket.jpg)
 
 ### Question 20
 
