@@ -41,8 +41,8 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 ## Deployment
 
-- [ ] **Q23**: Model API (how you built it / what’s special)
-- [ ] **Q24**: Deployment (local/cloud) + how to invoke the service
+- [x] **Q23**: Model API (how you built it / what’s special)
+- [x] **Q24**: Deployment (local/cloud) + how to invoke the service
 - [x] **Q25**: API unit tests + load tests (or how you would do it)
 - [ ] **Q26**: Monitoring (how it works / how it would help)
 
