@@ -585,7 +585,15 @@ Our results from the Cloud Run showed a stable performance with 0.5 requests per
 >
 > Answer:
 
---- question 27 fill here ---
+Student s204078 used all $60 of their credits, and student s251739 used all $50 of their credits, for a total of **$110** spent during development. The other two group members did not use any credits as they worked primarily on local development and testing.
+
+![GCP usage for s204078](figures/ravn%20usage.png)
+
+![GCP usage for s251739](figures/vincent%20usage.jpg)
+
+As shown in the billing breakdowns above, **Compute Engine** was by far the most expensive service, accounting for $59.25 and $49.96 respectively. This cost comes from the GPU-enabled VMs provisioned by Vertex AI for training jobs. Other services like Cloud Storage, Artifact Registry, and Cloud Run were negligible in comparison.
+
+Working in the cloud was valuable for running GPU-accelerated training that would be slow or impossible on our laptops. However, the learning curve for GCP configuration and the risk of accidentally leaving resources running made cost management a constant concern. The managed services (Vertex AI, Cloud Run) helped mitigate this by automatically shutting down after jobs complete.
 
 ### Question 28
 

@@ -32,8 +32,8 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 ## Working in the cloud
 
-- [...] **Q17**: GCP services used + short explanation of each
-- [ ] **Q18**: Compute Engine usage + VM types
+- [x] **Q17**: GCP services used + short explanation of each
+- [x] **Q18**: Compute Engine usage + VM types
 - [x] **Q19**: GCP bucket screenshots (stored data)
 - [x] **Q20**: Artifact Registry screenshots (docker images)
 - [x] **Q21**: Cloud Build history screenshots
@@ -48,7 +48,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 
 ## Overall discussion of project
 
-- [ ] **Q27**: Credits used + most expensive service + thoughts on cloud
+- [x] **Q27**: Credits used + most expensive service + thoughts on cloud
 - [x] **Q28**: Extra work beyond the other questions (what + why)
 - [x] **Q29**: Architecture figure + explain the pipeline steps
 - [x] **Q30**: Biggest struggles + how you overcame them
