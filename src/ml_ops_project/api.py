@@ -130,6 +130,9 @@ class InferenceOutput(BaseModel):
 async def predict(data: InferenceInput, background_tasks: BackgroundTasks):
     # Update Prometheus metrics
     request_counter.inc()
+    
+    # Log review length
+    review_summary.observe(len(data.statement))
 
     # Measure latency
     with request_latency.time():
