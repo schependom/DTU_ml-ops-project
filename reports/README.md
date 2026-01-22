@@ -485,7 +485,18 @@ Our Cloud Build history shows numerous builds executed during development. Most 
 >
 > Answer:
 
---- question 23 fill here ---
+We wrote an API for inference in our model using FastAPI. The API app contains a lifecycle using FastAPI's 'lifespan' setup. The lifecycle starts by downloading the model from our model registry via weights and biases; then instanciating the model via pytorch lightnings `load_from_checkpoint()` function. The API has a /inference endpoint, which uses the model for inference, given a json input like so:
+
+{statement: str}
+
+and returns a packet of json like so:
+
+{sentiment: int}
+
+This is handled using pydantic.
+
+Additionally, the app saves prediction sets of input -> output to google cloud, such that another app can run metrics and check drift.
+
 
 ### Question 24
 
@@ -497,8 +508,13 @@ Our Cloud Build history shows numerous builds executed during development. Most 
 > _For deployment we wrapped our model into application using ... . We first tried locally serving the model, which_ > _worked. Afterwards we deployed it in the cloud, using ... . To invoke the service an user would call_ > _`curl -X POST -F "file=@file.json"<weburl>`_
 >
 > Answer:
+We first tested our API locally using uvicorn to make sure everything worked; afterwards we containerized the application, tagged it and pushed it to the artifact registry (see the main `README.md`). From there, we deployed it via cloud run services on the google cloud interface, using the image from the artifact registry.
 
---- question 24 fill here ---
+To invoke the service, a user could use curl:
+`curl -X POST https://api-1041875805298.europe-west1.run.app/inference -H "Content-Type: application/json" -d '{"statement": "The movie was amazing"}'`
+
+Or on windows (if you haven't installed curl):
+`Invoke-RestMethod -Uri "https://api-1041875805298.europe-west1.run.app/inference" -Method Post -ContentType "application/json" -Body '{"statement": "The movie was amazing"}'`
 
 ### Question 25
 
