@@ -28,6 +28,7 @@ import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 from ml_ops_project.models import SentimentClassifier
 from ml_ops_project.pl_logging import LoguruLightningLogger
+from ml_ops_project.promote_best_model import trigger_cloud_run_redeployment
 
 # Load environment variables from .env file (e.g., WANDB_API_KEY)
 load_dotenv()
