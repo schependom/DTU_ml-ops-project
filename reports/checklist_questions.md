@@ -36,7 +36,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 - [ ] **Q18**: Compute Engine usage + VM types
 - [x] **Q19**: GCP bucket screenshots (stored data)
 - [x] **Q20**: Artifact Registry screenshots (docker images)
-- [ ] **Q21**: Cloud Build history screenshots
+- [x] **Q21**: Cloud Build history screenshots
 - [ ] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
 
 ## Deployment

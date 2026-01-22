@@ -455,7 +455,9 @@ Our Artifact Registry (`ml-ops-project-artifact-reg`) in `europe-west1` stores t
 >
 > Answer:
 
---- question 21 fill here ---
+Our Cloud Build history shows numerous builds executed during development. Most builds completed successfully (green checkmarks), with a few failures (red icons) during debugging. Build durations vary from quick ~15 second pushes to longer ~16 minute builds for full Docker image creation. Builds run in both `europe-west1` and `global` regions depending on the configuration.
+
+![GCP Cloud Build history](figures/cloud_build.jpg)
 
 ### Question 22
 
