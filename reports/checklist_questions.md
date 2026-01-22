@@ -37,7 +37,7 @@ Check off each question once you’ve written an answer in `reports/README.md`.
 - [x] **Q19**: GCP bucket screenshots (stored data)
 - [x] **Q20**: Artifact Registry screenshots (docker images)
 - [x] **Q21**: Cloud Build history screenshots
-- [ ] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
+- [x] **Q22**: Cloud training (Engine/Vertex AI): how (or why not)
 
 ## Deployment
 

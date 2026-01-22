@@ -413,7 +413,7 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 - **Cloud Storage**: Used to store our data and models for DVC.
 - **Cloud Build**: Used to build our docker images.
 - **Artifact Registry**: Used to store our docker images.
-- **Cloud Run**: TODO
+- **Cloud Run**: Used to deploy our API and monitoring service, via the corresponding Docker images.
 - **Vertex AI**: Used for running cloud training jobs.
 
 ### Question 18
@@ -427,7 +427,11 @@ Regarding profiling, we did not find it necessary to implement custom profiling 
 >
 > Answer:
 
---- question 18 fill here ---
+We did **not** manually create VMs to connect to them via SSH, clone the repo, set up Python, dependencies, etc. Instead, we **indirectly** utilized the Compute Engine infrastructure through **Vertex AI** and **Cloud Run**:
+1.  **Vertex AI Training**: When we submit a custom training job, Vertex AI provisions `n1-standard-4` instances with **NVIDIA T4 GPUs** behind the scenes to execute our containerized training script.
+2.  **Cloud Run**: Our API runs on serverless container instances which are also powered by the underlying Compute Engine infrastructure, scaling automatically based on request traffic.
+
+Using Vertex AI and Cloud Run reduces the overhead of manually managing VMs.
 
 ### Question 19
 
@@ -575,9 +579,14 @@ Our results from the Cloud Run showed a stable performance with 0.5 requests per
 >
 > Answer:
 
-We implemented **GCP alert systems** that notify us when any part of our cloud application fails. These alerts monitor Cloud Run service health, build failures in Cloud Build, and resource utilization. This proactive monitoring ensures we are immediately aware of issues in production rather than discovering them after users complain.
+We built a **drift detection service** deployed as a separate Cloud Run endpoint (`/monitoring`). This service compares the distribution of incoming inference requests against our training data to detect data drift. When the input distribution shifts significantly from what the model was trained on, it signals that model performance may degrade and retraining might be needed. This closes the MLOps feedback loop by connecting production data back to model development.
 
-We also built a **drift detection service** deployed as a separate Cloud Run endpoint (`/monitoring`). This service compares the distribution of incoming inference requests against our training data to detect data drift. When the input distribution shifts significantly from what the model was trained on, it signals that model performance may degrade and retraining might be needed. This closes the MLOps feedback loop by connecting production data back to model development.
+We also implemented **GCP alert systems** that notify us when our cloud application experiences issues. As shown in the images below, we configured alerts to trigger when end-to-end latency exceeds 300ms. The alert interface (right) shows a latency spike that triggered the threshold. These notifications are forwarded to email and even smartwatch (left), ensuring we are immediately aware of production issues.
+
+<p float="left">
+  <img src="figures/alert_watch.jpg" width="30%" />
+  <img src="figures/alerts_interface.png" width="68%" />
+</p>
 
 ### Question 29
 
