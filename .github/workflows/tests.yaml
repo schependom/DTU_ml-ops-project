@@ -40,7 +40,6 @@ jobs:
         run: |
           uv run coverage run -m pytest tests/ --ignore=tests/test_wandb.py
           uv run coverage report -m
-          uv run pytest tests/test_api.py
         env:
           WANDB_API_KEY: ${{ secrets.WANDB_API_KEY }}
           WANDB_PROJECT: ${{ secrets.WANDB_PROJECT }}
