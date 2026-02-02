@@ -33,7 +33,7 @@ dependencies = [
     "uvicorn==0.40.0",
     "wandb>=0.23.1",
     "torchmetrics>=1.0.0",
-    "numpy==1.26.4",
+    "numpy==2.4.2",
     "google-api-python-client>=2.188.0",
     "dvc-gs>=3.0.2",
     "dvc>=3.66.1",
@@ -54,13 +54,13 @@ dependencies = [
 #    uv sync --all-groups
 [dependency-groups]
 dev = [
-    "coverage==7.13.1",
+    "coverage==7.13.2",
     "invoke==2.2.1",
     "mkdocs-material>=9.5.0",
     "mkdocs>=1.6.0",
     "pre-commit==4.5.1",
     "pytest==9.0.2",
-    "ruff==0.14.11",
+    "ruff==0.14.14",
     "mkdocstrings[python]>=0.28.0",
     "pytest-cov>=7.0.0",
     "httpx>=0.28.1",
