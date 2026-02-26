@@ -6,7 +6,8 @@ updates:
   - package-ecosystem: "uv"
     directory: "/"
     schedule:
-      interval: "daily"
+      # interval: "daily"
+      # never
     groups:
       python-dependencies:
         patterns:
@@ -16,4 +17,5 @@ updates:
   - package-ecosystem:  "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
+      # interval: "daily"
+      # never
