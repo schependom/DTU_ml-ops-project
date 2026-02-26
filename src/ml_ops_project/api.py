@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 
 import torch
 import torch.nn.functional as F
+import wandb
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from google.cloud import storage
@@ -21,7 +22,6 @@ from hydra import compose, initialize
 from prometheus_client import Counter, Histogram, Summary, make_asgi_app
 from pydantic import BaseModel
 
-import wandb
 from ml_ops_project.models import SentimentClassifier
 
 load_dotenv()
