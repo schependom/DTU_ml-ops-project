@@ -38,7 +38,7 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
 
       # Use our custom action to avoid code duplication
     - name: Set up Python and dependencies
@@ -71,7 +71,7 @@ jobs:
     steps:
     # Same as above: checkout code, auth with gcp
     - name: Checkout code
-      uses: actions/checkout@v5
+      uses: actions/checkout@v7
     - name: Auth with GCP
       uses: ./.github/actions/setup-gcp
       with:
