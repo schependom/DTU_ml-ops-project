@@ -18,13 +18,13 @@ import hydra
 import omegaconf
 import pytorch_lightning as pl
 import torch
+import wandb
 from dotenv import load_dotenv
 from loguru import logger
 from omegaconf import DictConfig, OmegaConf
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from pytorch_lightning.loggers import WandbLogger
 
-import wandb
 from ml_ops_project.data import DataConfig, RottenTomatoesDataModule
 from ml_ops_project.models import SentimentClassifier
 from ml_ops_project.pl_logging import LoguruLightningLogger
