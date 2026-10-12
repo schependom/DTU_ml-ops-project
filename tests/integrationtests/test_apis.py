@@ -14,7 +14,7 @@ import pytest
 import torch
 from fastapi.testclient import TestClient
 
-import ml_ops_project.api as api
+from ml_ops_project import api
 
 
 # Minimal tokenizer stub to keep API handler lightweight in tests.
@@ -31,11 +31,11 @@ class _DummyModel:
         self.tokenizer = _DummyTokenizer()
         self.device = torch.device("cpu")
 
-    def to(self, device: torch.device) -> "_DummyModel":
+    def to(self, device: torch.device) -> _DummyModel:
         self.device = device
         return self
 
-    def eval(self) -> "_DummyModel":
+    def eval(self) -> _DummyModel:
         return self
 
     def __call__(self, input_ids: torch.Tensor, attention_mask: torch.Tensor, **_kwargs) -> SimpleNamespace:
