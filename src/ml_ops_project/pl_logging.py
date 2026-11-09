@@ -90,7 +90,6 @@ class LoguruLightningLogger(Logger):
 
     def save(self) -> None:
         """Save logger state (no-op for Loguru, which handles its own flushing)."""
-        pass
 
     def finalize(self, status: str) -> None:
         """Called at the end of training.
