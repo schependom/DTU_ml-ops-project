@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 
 import torch
 import torch.nn.functional as F
+import wandb
 from dotenv import load_dotenv
 from fastapi import BackgroundTasks, FastAPI, HTTPException
 from google.cloud import storage
@@ -21,7 +22,6 @@ from hydra import compose, initialize
 from prometheus_client import Counter, Histogram, Summary, make_asgi_app
 from pydantic import BaseModel
 
-import wandb
 from ml_ops_project.models import SentimentClassifier
 
 load_dotenv()
@@ -77,13 +77,13 @@ def save_prediction_to_gcp(review: str, outputs: list[float], sentiment: int, bu
     bucket = client.bucket(bucket_name)
     print(bucket_name)
     print(bucket)
-    time = datetime.datetime.now(tz=datetime.timezone.utc)
+    time = datetime.datetime.now(tz=datetime.UTC)
     # Prepare prediction data
     data = {
         "review": review,
         "sentiment": sentiment,
         "probability": outputs,
-        "timestamp": datetime.datetime.now(tz=datetime.timezone.utc).isoformat(),
+        "timestamp": datetime.datetime.now(tz=datetime.UTC).isoformat(),
     }
     blob = bucket.blob(f"predictions/prediction_{time}.json")
     blob.upload_from_string(json.dumps(data))
